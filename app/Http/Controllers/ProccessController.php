@@ -387,7 +387,17 @@ class ProccessController extends Controller
         // ->orderBy('kelas')
         // ->get();
 
-        return view('schedule.index', ['data' => $data, 'query' => $query, 'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'jadwal' => $jadwal]);
+        return view(
+            'schedule.index',
+            [
+                'data' => $data,
+                'query' => $query,
+                'bentrok' => $bentrok,
+                'tidakBentrok' => $tidakBentrok,
+                'bentrokdata' => $bentrokdata,
+                'jadwal' => $jadwal
+            ]
+        );
     }
     public function __construct(
         Lecture $m_dosen,
@@ -410,7 +420,7 @@ class ProccessController extends Controller
         $this->m_jadwalkuliah = $m_jadwalkuliah;
     }
 
-    public  function index(Request $request)
+    public function index(Request $request)
     {
         set_time_limit(120000);
         $data = array();

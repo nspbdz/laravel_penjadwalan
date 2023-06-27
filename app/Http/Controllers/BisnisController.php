@@ -15,6 +15,7 @@ use App\Models\Course;
 use DB;
 use Illuminate\Support\Arr;
 use App\Http\Controllers\ProccessController;
+
 class BisnisController extends Controller
 {
     private $PRAKTIKUM = 'PRAKTIKUM';
@@ -81,9 +82,8 @@ class BisnisController extends Controller
         $this->crossOver      = $crossOver;
         $this->mutasi         = $mutasi;
         $this->kode_jumat     = intval($kode_jumat);
-        $this->range_jumat    = explode('-',$range_jumat);//$hari_jam = explode(':', $this->waktu_dosen[$j][1]);
+        $this->range_jumat    = explode('-', $range_jumat); //$hari_jam = explode(':', $this->waktu_dosen[$j][1]);
         $this->kode_dhuhur    = intval($kode_dhuhur);
-
     }
 
     public function ambildata()
@@ -108,14 +108,14 @@ class BisnisController extends Controller
 
 
         $rs_data = DB::table('pengampu AS a')
-            ->select('a.kode', 'b.sks', 'a.kode_dosen', 'b.jenis', 'b.semester','a.tahun_akademik')
+            ->select('a.kode', 'b.sks', 'a.kode_dosen', 'b.jenis', 'b.semester', 'a.tahun_akademik')
             ->leftJoin('matakuliah AS b', 'a.kode_mk', '=', 'b.kode')
             // ->whereRaw('b.semester % 2', '=', $this->jenis_semester)
             // ->where('a.tahun_akademik', '=', $this->tahun_akademik)
             // ->whereRaw('b.semester % 2', '=', '1')
             // ->where('a.tahun_akademik', '=', '2018-2019')
             ->whereRaw('b.semester % 2 = ?', [$this->jenis_semester])
-             ->where('a.tahun_akademik', '=', $this->tahun_akademik)
+            ->where('a.tahun_akademik', '=', $this->tahun_akademik)
             ->get();
 
         $i = 0;
@@ -197,8 +197,6 @@ class BisnisController extends Controller
             $this->waktu_dosen[$i][1] = $data->kode_hari_jam;
             $i++;
         }
-
-
     }
 
     public function inisialisasi()
@@ -211,7 +209,7 @@ class BisnisController extends Controller
         $jumlah_ruang_lab = count($this->ruangLaboratorium);
         $jumlah_ruang_proyek = count($this->ruangProyek);
         $jumlah_ruang_bahasa = count($this->ruangBahasa);
-    $this->populasi = 10;
+        $this->populasi = 10;
         //dd($this->jam);
         for ($i = 0; $i < $this->populasi; $i++) {
 
@@ -262,7 +260,6 @@ class BisnisController extends Controller
                 }
             }
         }
-
     }
 
     // public function inisialiasi()
@@ -401,7 +398,7 @@ class BisnisController extends Controller
             $sks = intval($this->sks[$i]);
 
             $jam_a = intval($this->individu[$indv][$i][1]);
-             //dd($jam_a);
+            //dd($jam_a);
             $hari_a = intval($this->individu[$indv][$i][2]);
             $ruang_a = intval($this->individu[$indv][$i][3]);
             $dosen_a = intval($this->dosen[$i]);
@@ -623,23 +620,22 @@ class BisnisController extends Controller
 
             $jumlah_waktu_tidak_bersedia = count($this->idosen);
 
-            for ($j = 0; $j < $jumlah_waktu_tidak_bersedia; $j++)
-            {
-                if ($dosen_a == $this->idosen[$j])
-                {   $hari_jam = array();
+            for ($j = 0; $j < $jumlah_waktu_tidak_bersedia; $j++) {
+                if ($dosen_a == $this->idosen[$j]) {
+                    $hari_jam = array();
                     $hari_jam = explode(':', $this->waktu_dosen[$j][1]);
                     //dd( $jumlah_waktu_tidak_bersedia);
                     if (isset($hari_jam[1])) {
-                    if ($this->jam[$jam_a] == $hari_jam[1] &&
-                        $this->hari[$hari_a] == $hari_jam[0])
-                    {
-                        $penalty += 1;
+                        if (
+                            $this->jam[$jam_a] == $hari_jam[1] &&
+                            $this->hari[$hari_a] == $hari_jam[0]
+                        ) {
+                            $penalty += 1;
+                        }
                     }
                 }
-                }
-
             }
-             //dd($hari_jam);
+            //dd($hari_jam);
 
 
 
@@ -673,15 +669,12 @@ class BisnisController extends Controller
         //soft constraint //TODO
         $fitness = array();
 
-        for ($indv = 0; $indv < $this->populasi; $indv++)
-        {
+        for ($indv = 0; $indv < $this->populasi; $indv++) {
             $fitness[$indv] = $this->CekFitness($indv);
         }
         // dd($fitness[$indv]);
-       // dd($indv);
+        // dd($indv);
         return $fitness;
-
-
     }
     public function Seleksi($fitness)
     {
@@ -690,15 +683,13 @@ class BisnisController extends Controller
 
 
 
-        for ($i = 0; $i < $this->populasi; $i++)
-        {
-          //proses ranking berdasarkan nilai fitness
+        for ($i = 0; $i < $this->populasi; $i++) {
+            //proses ranking berdasarkan nilai fitness
             $rank[$i] = 1;
-            for ($j = 0; $j < $this->populasi; $j++)
-            {
-              //ketika nilai fitness jadwal sekarang lebih dari nilai fitness jadwal yang lain,
-              //ranking + 1;
-              //if (i == j) continue;
+            for ($j = 0; $j < $this->populasi; $j++) {
+                //ketika nilai fitness jadwal sekarang lebih dari nilai fitness jadwal yang lain,
+                //ranking + 1;
+                //if (i == j) continue;
 
                 $fitnessA = floatval($fitness[$i]);
                 $fitnessB = floatval($fitness[$j]);
@@ -706,19 +697,15 @@ class BisnisController extends Controller
                 $a = $fitnessA = floatval($fitness[$i]);
                 $b = $fitnessB = floatval($fitness[$j]);
 
-                if ( $fitnessA > $fitnessB)
-                {
+                if ($fitnessA > $fitnessB) {
                     $rank[$i] += 1;
-
                 }
             }
 
             $jumlah += $rank[$i];
-
         }
         $jumlah_rank = count($rank);
-        for ($i = 0; $i < $this->populasi; $i++)
-        {
+        for ($i = 0; $i < $this->populasi; $i++) {
             $target = mt_rand(0, $jumlah - 1);
 
             $cek    = 0;
@@ -730,13 +717,13 @@ class BisnisController extends Controller
                 }
             }
         }
-       //echo "<pre>";
-       //print_r($fitness);   exit();
+        //echo "<pre>";
+        //print_r($fitness);   exit();
     }
 
     //#endregion
     #endregion
-     public function StartCrossOver()
+    public function StartCrossOver()
     {
         $individu_baru = array(array(array()));
         $jumlah_pengampu = count($this->pengampu);
@@ -792,12 +779,12 @@ class BisnisController extends Controller
         $jumlah_pengampu = count($this->pengampu);
 
         for ($i = 0; $i < $this->populasi; $i += 2) {
-          for ($j = 0; $j < $jumlah_pengampu ; $j++) {
-            for ($k = 0; $k < 4; $k++) {
-                $this->individu[$i][$j][$k] = $individu_baru[$i][$j][$k];
-                $this->individu[$i + 1][$j][$k] = $individu_baru[$i + 1][$j][$k];
+            for ($j = 0; $j < $jumlah_pengampu; $j++) {
+                for ($k = 0; $k < 4; $k++) {
+                    $this->individu[$i][$j][$k] = $individu_baru[$i][$j][$k];
+                    $this->individu[$i + 1][$j][$k] = $individu_baru[$i + 1][$j][$k];
+                }
             }
-          }
         }
     }
     public function Mutasi()
@@ -850,23 +837,17 @@ class BisnisController extends Controller
                     $this->individu[$i][$krom][3] = $this->ruangReguler[mt_rand(0, $jumlah_ruang_reguler - 1)];
                 } elseif ($this->jenis_mk[$krom] === $this->PRAKTIKUM) {
                     $this->individu[$i][$krom][3] = $this->ruangLaboratorium[mt_rand(0, $jumlah_ruang_lab - 1)];
-                }
-                elseif ($this->jenis_mk[$krom] === $this->PROYEK) {
+                } elseif ($this->jenis_mk[$krom] === $this->PROYEK) {
                     $this->individu[$i][$krom][3] = $this->ruangProyek[mt_rand(0, $jumlah_ruang_proyek - 1)];
-                }
-                else {
+                } else {
                     $this->individu[$i][$krom][3] = $this->ruangBahasa[mt_rand(0, $jumlah_ruang_bahasa - 1)];
                 }
-
-
             }
 
             $fitness[$i] = $this->CekFitness($i);
-
         }
 
         return $fitness;
-
     }
 
 
@@ -877,8 +858,7 @@ class BisnisController extends Controller
         //int[,] individu_solusi = new int[mata_kuliah.Length, 4];
         $individu_solusi = array(array());
 
-        for ($j = 0; $j < count($this->pengampu); $j++)
-        {
+        for ($j = 0; $j < count($this->pengampu); $j++) {
             $individu_solusi[$j][0] = intval($this->pengampu[$this->individu[$indv][$j][0]]);
             $individu_solusi[$j][1] = intval($this->jam[$this->individu[$indv][$j][1]]);
             $individu_solusi[$j][2] = intval($this->hari[$this->individu[$indv][$j][2]]);

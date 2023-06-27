@@ -23,9 +23,9 @@
                     </select>
                     <label>Tahun Akademik</label>
                     <select id="tahun_akademik" name="tahun_akademik" class="form-control">
-                        <option value="2017-2018" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2017-2018' ? 'selected' : '') : ''; ?> /> 2017-2018
-                        <option value="2018-2019" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2018-2019' ? 'selected' : '') : ''; ?> /> 2018-2019
-                        <option value="2019-2020" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2019-2020' ? 'selected' : '') : ''; ?> /> 2019-2020
+                        <option value="2020-2021" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2020-2021' ? 'selected' : '') : ''; ?> /> 2020-2021
+                        <option value="2021-2022" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2021-2022' ? 'selected' : '') : ''; ?> /> 2021-2022
+                        <option value="2022-2023" <?php echo isset($tahun_akademik) ? ($tahun_akademik === '2022-2023' ? 'selected' : '') : ''; ?> /> 2022-2023
 
                     </select>
 
@@ -89,35 +89,79 @@
 
         </div>
 
+        <h3>Ini Data Bentrok</h3>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-md">
                     <tr>
                         <th>No</th>
                         <th>Hari</th>
+                        <th>Sesi</th>
                         <th>Jam</th>
+                        <th>Kelas</th>
                         <th>matakuliah</th>
+                        <th>Dosen</th>
                         <th>SKS</th>
                         <th>Semester</th>
-                        <th>Kelas</th>
+
                         <th>Ruang</th>
 
                     </tr>
-                    @foreach($query as $item)
+                    @foreach($bentrokdata as $data)
+
+
+                    <tr style="background: yellow;">
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>{{ $data [1] }}</td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+
+                        <td>{{ $data [8] }}</td>
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Ini Data Tidak Bentrok</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
+
+                        <th>Ruang</th>
+
+                    </tr>
+
+                    @foreach($tidakBentrok as $data)
                     <tr>
                         <td>{{ $loop->index + 1 }}</td>
-                        <td>{{ $item->hr }}</td>
-                        <td>{{ $item->range_jam }}</td>
-                        <td>{{ $item->nama }}</td>
-                        <td>{{ $item->sks }}</td>
-                        <td>{{ $item->semester }}</td>
-                        <td>{{ $item->kelas }}</td>
-                        <td>{{ $item->nama_ruang }}</td>
-                        <!-- <td>
-<a href="/schedule/edit/{{ $item->kode }}">Edit</a>
-|
-<a href="/schedule/hapus/{{ $item->kode }}">Hapus</a>
-</td> -->
+                        <td>{{ $data [0] }}</td>
+                        <td>{{ $data [1] }}</td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
+
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+
+                        <td>{{ $data [8] }}</td>
+
                     </tr>
                     @endforeach
                 </table>

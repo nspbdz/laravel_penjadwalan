@@ -19,7 +19,7 @@ class AlgoritmaGenetikaController extends Controller
 
             foreach ($courses as $course) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                dd(count($rooms));
+                // dd(count($rooms));
                 $randomRoom = $rooms[rand(0, count($rooms) - 1)];
                 $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
 
@@ -218,14 +218,14 @@ class AlgoritmaGenetikaController extends Controller
             }
         }
 
-        $rooms = [
-            ['id' => 1, 'name' => 'Room 1'],
-            ['id' => 2, 'name' => 'Room 2'],
-            ['id' => 3, 'name' => 'Room 3'],
-        ];
+        // $rooms = [
+        //     ['id' => 1, 'name' => 'Room 1'],
+        //     ['id' => 2, 'name' => 'Room 2'],
+        //     ['id' => 3, 'name' => 'Room 3'],
+        // ];
 
-        // $roomsObj = (array) (new Room())->getRoom();
-        // $rooms = json_decode(json_encode($roomsObj), true);
+        $roomsObj = (array) (new Room())->getRoom();
+        $rooms = json_decode(json_encode($roomsObj), true);
 // dd(count($rooms));
         // dd($rooms);
 

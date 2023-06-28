@@ -22,6 +22,6 @@ class Room extends Model
     {
         return DB::table($this->table)
             ->select(DB::raw('kode as id'), DB::raw('nama as name'), 'jenis')
-            ->get();
+            ->get()->toArray();
     }
 }

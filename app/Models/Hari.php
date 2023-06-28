@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Hari extends Model
 {
@@ -14,4 +15,11 @@ class Hari extends Model
         'kode',
     ];
     protected $table = 'hari';
+
+    public function getHari()
+    {
+        return DB::table($this->table)
+            ->select('nama')
+            ->pluck('nama')->unique()->toArray();
+    }
 }

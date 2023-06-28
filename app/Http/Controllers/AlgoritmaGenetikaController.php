@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
+use App\Models\Hari;
+use App\Models\Hour;
+use App\Models\Room;
+
 class AlgoritmaGenetikaController extends Controller
 {
     // Inisialisasi populasi awal
@@ -14,6 +19,7 @@ class AlgoritmaGenetikaController extends Controller
 
             foreach ($courses as $course) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                dd(count($rooms));
                 $randomRoom = $rooms[rand(0, count($rooms) - 1)];
                 $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
 
@@ -40,6 +46,8 @@ class AlgoritmaGenetikaController extends Controller
 
         // Contoh: Menambahkan satu poin fitness jika tidak ada bentrok
         $timeSlots = [];
+
+        // dd($schedule);
 
         foreach ($schedule as $course) {
             $timeslotId = $course['timeslot']['id'];
@@ -184,19 +192,43 @@ class AlgoritmaGenetikaController extends Controller
         $mutationRate = 40; // Persentase mutasi (0-100)
         $maxGenerations = 1000;
 
-        $courses = ['Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'];
-        $timeslots = [
-            ['id' => 1, 'day' => 'Monday', 'time' => '08:00'],
-            ['id' => 2, 'day' => 'Monday', 'time' => '10:00'],
-            ['id' => 3, 'day' => 'Tuesday', 'time' => '13:00'],
-            ['id' => 4, 'day' => 'Wednesday', 'time' => '09:00'],
-            ['id' => 5, 'day' => 'Thursday', 'time' => '15:00'],
-        ];
+        // Sample $courses = ['Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'];
+        $courses = (new Course())->getCourse(request('tahun_akademik'), request('semester_tipe'));
+        // dd($course);
+
+        // Contoh $timeslots = [
+        //     ['id' => 1, 'day' => 'Monday', 'time' => '08:00'],
+        //     ['id' => 2, 'day' => 'Monday', 'time' => '10:00'],
+        //     ['id' => 3, 'day' => 'Tuesday', 'time' => '13:00'],
+        //     ['id' => 4, 'day' => 'Wednesday', 'time' => '09:00'],
+        //     ['id' => 5, 'day' => 'Thursday', 'time' => '15:00'],
+        // ];
+
+        $days = (new Hari())->getHari();
+        $times = (new Hour())->getJam();
+        $i = 0;
+        foreach ($days as $hari) {
+            foreach ($times as $time) {
+                $timeslots[] = [
+                    'id' => $i,
+                    'day' => $hari,
+                    'time' => $time
+                ];
+                $i++;
+            }
+        }
+
         $rooms = [
             ['id' => 1, 'name' => 'Room 1'],
             ['id' => 2, 'name' => 'Room 2'],
             ['id' => 3, 'name' => 'Room 3'],
         ];
+
+        // $roomsObj = (array) (new Room())->getRoom();
+        // $rooms = json_decode(json_encode($roomsObj), true);
+// dd(count($rooms));
+        // dd($rooms);
+
         $instructors = [
             ['id' => 1, 'name' => 'Instructor 1'],
             ['id' => 2, 'name' => 'Instructor 2'],

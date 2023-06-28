@@ -522,7 +522,7 @@ class ProccessController extends Controller
                                 $kode_ruang = intval($jadwal_kuliah[$k][3]);
 
 
-                                DB::table('jadwalkuliah')->insert([
+                                DB::table('jadwalkuliah')->insertOrIgnore([
                                     'kode_pengampu' => $kode_pengampu,
                                     'kode_jam' => $kode_jam,
                                     'kode_hari' => $kode_hari,

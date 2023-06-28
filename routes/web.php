@@ -122,6 +122,8 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
         Route::get('/genetika_search/search', 'GenetikaSearchController@search')->name('genetika.search');
         Route::get('/genetika_search/mesh', 'GenetikaSearchController@meshbaru')->name('genetika.search');
 
+        Route::get('/algoritma', 'AlgoritmaGenetikaController@build')->name('algoritma.build');
+
 
 
         //Route::get('/schedule', 'ScheduleController@index')->name('schedule.index');

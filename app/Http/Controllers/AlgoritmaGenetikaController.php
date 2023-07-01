@@ -21,9 +21,12 @@ class AlgoritmaGenetikaController extends Controller
             foreach ($courses as $course) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                 // dd(count($rooms));
-                dd($rooms);
-                $randomRoom = $rooms[rand(0, count($rooms) - 1)];
-                $dosenId = explode(' - ', $course)[1];
+                // dd($rooms);
+                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
+                $explode = explode(' - ', $course);
+                $jenis = $explode[2];
+                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                $dosenId = $explode[1];
                 $instructor = $this->checkDosen($dosenId, $instructors);
                 // $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
 
@@ -52,7 +55,7 @@ class AlgoritmaGenetikaController extends Controller
         $timeSlots = [];
 
         // dd($schedule);
-// dd($schedule);
+        // dd($schedule);
         foreach ($schedule as $course) {
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
@@ -138,8 +141,11 @@ class AlgoritmaGenetikaController extends Controller
         foreach ($individual as $course => $details) {
             if (rand(0, 100) < $mutationRate) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                $randomRoom = $rooms[rand(0, count($rooms) - 1)];
-                $dosenId = explode(' - ', $course)[1];
+                $explode = explode(' - ', $course);
+                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
+                $jenis = $explode[2];
+                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                $dosenId = $explode[1];
                 $instructor = $this->checkDosen($dosenId, $instructors);
 
                 $individual[$course]['timeslot'] = $randomTimeslot;
@@ -159,6 +165,25 @@ class AlgoritmaGenetikaController extends Controller
             return $data[$key];
         }
         return 'Dosen Tidak Ditemukan';
+    }
+
+    function getRandomRuangan($array, $jenisToSearch)
+    {
+        if ($jenisToSearch == 'PRAKTIKUM') {
+            $jenisToSearch = 'LABORATORIUM';
+        }
+        $results = array_filter($array, function ($element) use ($jenisToSearch) {
+            return $element['jenis'] === $jenisToSearch;
+        });
+
+        $randomElement = null;
+
+        if (!empty($results)) {
+            $randomKey = array_rand($results);
+            $randomElement = $results[$randomKey];
+        }
+
+        return $randomElement;
     }
 
     // Menggabungkan langkah-langkah algoritma genetika

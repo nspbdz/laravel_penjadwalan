@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Hari;
 use App\Models\Hour;
+use App\Models\Lecture;
 use App\Models\Room;
 
 class AlgoritmaGenetikaController extends Controller
@@ -20,13 +21,16 @@ class AlgoritmaGenetikaController extends Controller
             foreach ($courses as $course) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                 // dd(count($rooms));
+                dd($rooms);
                 $randomRoom = $rooms[rand(0, count($rooms) - 1)];
-                $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
+                $dosenId = explode(' - ', $course)[1];
+                $instructor = $this->checkDosen($dosenId, $instructors);
+                // $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
                     'room' => $randomRoom,
-                    'instructor' => $randomInstructor,
+                    'instructor' => $instructor,
                 ];
             }
 
@@ -48,7 +52,7 @@ class AlgoritmaGenetikaController extends Controller
         $timeSlots = [];
 
         // dd($schedule);
-
+// dd($schedule);
         foreach ($schedule as $course) {
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
@@ -135,15 +139,26 @@ class AlgoritmaGenetikaController extends Controller
             if (rand(0, 100) < $mutationRate) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                 $randomRoom = $rooms[rand(0, count($rooms) - 1)];
-                $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
+                $dosenId = explode(' - ', $course)[1];
+                $instructor = $this->checkDosen($dosenId, $instructors);
 
                 $individual[$course]['timeslot'] = $randomTimeslot;
                 $individual[$course]['room'] = $randomRoom;
-                $individual[$course]['instructor'] = $randomInstructor;
+                $individual[$course]['instructor'] = $instructor;
             }
         }
 
         return $individual;
+    }
+
+    function checkDosen($id, $data)
+    {
+        $key = array_search($id, array_column($data, 'id'));
+        if ($key !== false) {
+            // $foundElement = $data[$key];
+            return $data[$key];
+        }
+        return 'Dosen Tidak Ditemukan';
     }
 
     // Menggabungkan langkah-langkah algoritma genetika
@@ -194,7 +209,6 @@ class AlgoritmaGenetikaController extends Controller
 
         // Sample $courses = ['Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'];
         $courses = (new Course())->getCourse(request('tahun_akademik'), request('semester_tipe'));
-        // dd($course);
 
         // Contoh $timeslots = [
         //     ['id' => 1, 'day' => 'Monday', 'time' => '08:00'],
@@ -226,25 +240,37 @@ class AlgoritmaGenetikaController extends Controller
 
         $roomsObj = (array) (new Room())->getRoom();
         $rooms = json_decode(json_encode($roomsObj), true);
-// dd(count($rooms));
+        // dd(count($rooms));
         // dd($rooms);
 
-        $instructors = [
-            ['id' => 1, 'name' => 'Instructor 1'],
-            ['id' => 2, 'name' => 'Instructor 2'],
-            ['id' => 3, 'name' => 'Instructor 3'],
-        ];
+        // $instructors = [
+        //     ['id' => 1, 'name' => 'Instructor 1'],
+        //     ['id' => 2, 'name' => 'Instructor 2'],
+        //     ['id' => 3, 'name' => 'Instructor 3'],
+        // ];
+
+        $instructorsObj = (array) (new Lecture)->getDosen();
+        $instructors = json_decode(json_encode($instructorsObj), true);
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors);
 
         // Tampilkan hasil penjadwalan
         echo "Best Schedule:<br>";
+        echo "<table>";
+        echo "<tr>
+        <td>Mata Kuliah</td>
+        <td>Waktu</td>
+        <td>Ruang</td>
+        <td>Dosen</td>
+        </tr>";
         foreach ($result as $course => $details) {
-            echo "Course: $course<br>";
-            echo "Timeslot: {$details['timeslot']['day']} {$details['timeslot']['time']}<br>";
-            echo "Room: {$details['room']['name']}<br>";
-            echo "Instructor: {$details['instructor']['name']}<br>";
-            echo "--------<br>";
+            echo "<tr>";
+            echo "<td>$course<br>";
+            echo "<td>{$details['timeslot']['day']} {$details['timeslot']['time']}</td>";
+            echo "<td>{$details['room']['name']}</td>";
+            echo "<td>{$details['instructor']['name']}</td>";
+            echo "</tr>";
         }
+        echo "</table>";
     }
 }

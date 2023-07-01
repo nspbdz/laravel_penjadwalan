@@ -22,10 +22,10 @@ class Course extends Model
     public function getCourse($tahunAkademik, $semesterGanjil = 0)
     {
         return DB::table('pengampu')
-            ->select(DB::raw('matakuliah.nama as nama_mata_kuliah'))
+            ->select(DB::raw("CONCAT(pengampu.kode,' - ',pengampu.kode_dosen,' - ',matakuliah.nama) as nama_mata_kuliah"))
             ->leftJoin('matakuliah', 'matakuliah.kode', '=', 'pengampu.kode_mk')
             ->where('pengampu.tahun_akademik', '=', $tahunAkademik)
             ->where(DB::raw('matakuliah.semester % 2'), '=', $semesterGanjil)
-            ->pluck('nama_mata_kuliah')->unique()->toArray();
+            ->pluck('nama_mata_kuliah')->toArray();
     }
 }

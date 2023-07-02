@@ -9,10 +9,12 @@ use App\Models\Lecture;
 use App\Models\Room;
 use App\Models\Schedule;
 use App\Models\Wb;
+use App\Models\Wtb;
 
 class AlgoritmaGenetikaController extends Controller
 {
     private $wb = [];
+    private $wtb = [];
     // Inisialisasi populasi awal
     private function initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors)
     {
@@ -35,6 +37,9 @@ class AlgoritmaGenetikaController extends Controller
                     $ruang = $this->wb[$courseId]['ruang'];
                     $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
                     $randomRoom = $this->getRuangan($rooms, $ruang);
+                } elseif (!empty($this->wtb[$dosenId])) {
+                    $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 } else {
                     // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
                     $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
@@ -58,6 +63,7 @@ class AlgoritmaGenetikaController extends Controller
 
             $population[] = $schedule;
         }
+        // dd($population);
 
         return $population;
     }
@@ -77,7 +83,7 @@ class AlgoritmaGenetikaController extends Controller
         // dd($schedule);
         foreach ($schedule as $course) {
             // dd($course);
-           
+
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
             $instructorId = $course['instructor']['id'];
@@ -188,6 +194,9 @@ class AlgoritmaGenetikaController extends Controller
                     $ruang = $this->wb[$courseId]['ruang'];
                     $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
                     $randomRoom = $this->getRuangan($rooms, $ruang);
+                } elseif (!empty($this->wtb[$dosenId])) {
+                    $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 } else {
                     // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
                     $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
@@ -269,6 +278,31 @@ class AlgoritmaGenetikaController extends Controller
         return $randomElement;
     }
 
+    private function getRandomTimeSlotWtb($array, $arrayHapus)
+    {
+        $compare = function ($a, $b) {
+            return ($a['day'] === $b['day'] && $a['time'] === $b['time']) ? 0 : -1;
+        };
+
+        $results = array_udiff($array, $arrayHapus, $compare);
+
+        $randomElement = null;
+
+        if (!empty($results)) {
+            $randomKey = array_rand($results);
+            $randomElement = $results[$randomKey];
+        }
+
+        return $randomElement;
+    }
+
+    //     $compare = function ($a, $b) {
+    //     return $a <=> $b;
+    // };
+
+    // $arrahasil = array_udiff($array, $arrayhapus, $compare);
+    // print_r($arrahasil);
+
     // Fungsi untuk memeriksa waktu tidak tersedia
     // private function isTimeUnavailable($course)
     // {
@@ -334,8 +368,9 @@ class AlgoritmaGenetikaController extends Controller
                 $bestFitness = $fitness;
                 $bestIndividual = $individual;
             }
+            // $bestIndividual['fitness'] = $fitness;
         }
-
+        // dd($bestIndividual);
         return $bestIndividual;
     }
 
@@ -404,6 +439,14 @@ class AlgoritmaGenetikaController extends Controller
             $this->wb[$row->kode_pengampu]['ruang'] = $row->kode_ruang;
         }
 
+        $resultWtb = Wtb::all();
+        foreach ($resultWtb as $row) {
+            $this->wtb[$row->kode_dosen][] = [
+                'day' => $row->kode_hari,
+                'time' => $row->kode_jam
+            ];
+        }
+
         // dd($this->wb);
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors);
@@ -424,6 +467,7 @@ class AlgoritmaGenetikaController extends Controller
             echo "<td>{$details['timeslot']['day']} {$details['timeslot']['time']}</td>";
             echo "<td>{$details['room']['name']}</td>";
             echo "<td>{$details['instructor']['name']}</td>";
+            // echo "<td>{$details['fitness']}</td>";
             echo "</tr>";
             $explode = explode(' - ', $course);
 

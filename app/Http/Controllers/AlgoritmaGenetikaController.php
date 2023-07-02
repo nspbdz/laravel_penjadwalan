@@ -8,11 +8,13 @@ use App\Models\Hour;
 use App\Models\Lecture;
 use App\Models\Room;
 use App\Models\Schedule;
+use App\Models\Wb;
 
 class AlgoritmaGenetikaController extends Controller
 {
+    private $wb = [];
     // Inisialisasi populasi awal
-    function initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors)
+    private function initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors)
     {
         $population = [];
 
@@ -20,24 +22,36 @@ class AlgoritmaGenetikaController extends Controller
             $schedule = [];
 
             foreach ($courses as $course) {
-                $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                // dd($randomTimeslot);
-                // dd(count($rooms));
-                // dd($rooms);
-                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
                 $explode = explode(' - ', $course);
-                $jenis = $explode[2];
-                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                $courseId = $explode[0];
                 $dosenId = $explode[1];
+                $jenis = $explode[2];
+                $class = $explode[3];
+                $sks = $explode[4];
+                // dd($rooms);
+                if (!empty($this->wb[$courseId])) {
+                    $day = $this->wb[$courseId]['day'];
+                    $time = $this->wb[$courseId]['time'];
+                    $ruang = $this->wb[$courseId]['ruang'];
+                    $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                    $randomRoom = $this->getRuangan($rooms, $ruang);
+                } else {
+                    // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
+                    $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                }
+
+
+
                 $instructor = $this->checkDosen($dosenId, $instructors);
                 // $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
-                $sks = $explode[4];
+
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
                     'room' => $randomRoom,
                     'instructor' => $instructor,
-                    'class' => ['id' => $explode[3]],
+                    'class' => ['id' => $class],
                     'sks' => $sks
                 ];
             }
@@ -49,7 +63,7 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Evaluasi fitness
-    function calculateFitness($schedule)
+    private function calculateFitness($schedule)
     {
         // Implementasikan fungsi penilaian fitness sesuai kebutuhan Anda
         // Misalnya, dapat berdasarkan jumlah bentrok atau preferensi pengguna
@@ -63,6 +77,7 @@ class AlgoritmaGenetikaController extends Controller
         // dd($schedule);
         foreach ($schedule as $course) {
             // dd($course);
+           
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
             $instructorId = $course['instructor']['id'];
@@ -70,10 +85,18 @@ class AlgoritmaGenetikaController extends Controller
             $sks = $course['sks'];
 
             for ($i = 0; $i < $sks; $i++) {
-                $timeslotRoom = $timeslotId + $i . '-' . $roomId;
-                $timeslotInstructor = $timeslotId + $i . '-' . $instructorId;
-                $timeslotClass = $timeslotId + $i . '-' . $classId;
+                $timeslotRoom = $timeslotId + $i . 'T-R' . $roomId;
+                $timeslotInstructor = $timeslotId + $i . 'T-I' . $instructorId;
+                $timeslotClass = $timeslotId + $i . 'T-C' . $classId;
             }
+
+            // if ($this->isTimeUnavailable($course)) {
+            //     // Mengurangi fitness jika waktu tidak tersedia
+            //     $fitness -= 100; // Nilai pengurangan fitness yang bisa disesuaikan
+            // } elseif ($this->isTimeAvailable($course)) {
+            //     // Menambah fitness jika waktu tersedia
+            //     $fitness += 1; // Nilai penambahan fitness yang bisa disesuaikan
+            // }
 
             if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor]) || isset($timeSlots[$timeslotClass])) {
                 $fitness++; // Bentrok ditemukan, tambahkan poin fitness
@@ -91,7 +114,7 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Seleksi orang tua menggunakan turnamen
-    function selectParents($population, $tournamentSize)
+    private function selectParents($population, $tournamentSize)
     {
         $parents = [];
 
@@ -124,7 +147,7 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Operasi crossover menggunakan satu titik potong
-    function crossover($parent1, $parent2)
+    private function crossover($parent1, $parent2)
     {
         $child = [];
 
@@ -148,30 +171,42 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Mutasi individu dengan mengganti gen secara acak
-    function mutate($individual, $mutationRate, $timeslots, $rooms, $instructors)
+    private function mutate($individual, $mutationRate, $timeslots, $rooms, $instructors)
     {
         foreach ($individual as $course => $details) {
             if (rand(0, 100) < $mutationRate) {
-                $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                 $explode = explode(' - ', $course);
-                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
-                $jenis = $explode[2];
-                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                $courseId = $explode[0];
                 $dosenId = $explode[1];
+                $jenis = $explode[2];
+                $class = $explode[3];
+                $sks = $explode[4];
+                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
+                if (!empty($this->wb[$courseId])) {
+                    $day = $this->wb[$courseId]['day'];
+                    $time = $this->wb[$courseId]['time'];
+                    $ruang = $this->wb[$courseId]['ruang'];
+                    $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                    $randomRoom = $this->getRuangan($rooms, $ruang);
+                } else {
+                    // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
+                    $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                }
                 $instructor = $this->checkDosen($dosenId, $instructors);
 
                 $individual[$course]['timeslot'] = $randomTimeslot;
                 $individual[$course]['room'] = $randomRoom;
                 $individual[$course]['instructor'] = $instructor;
-                $individual[$course]['class'] = ['id' => $explode[3]];
-                $individual[$course]['sks'] = $explode[4];
+                $individual[$course]['class'] = ['id' => $class];
+                $individual[$course]['sks'] = $sks;
             }
         }
 
         return $individual;
     }
 
-    function checkDosen($id, $data)
+    private function checkDosen($id, $data)
     {
         $key = array_search($id, array_column($data, 'id'));
         if ($key !== false) {
@@ -181,7 +216,7 @@ class AlgoritmaGenetikaController extends Controller
         return 'Dosen Tidak Ditemukan';
     }
 
-    function getRandomRuangan($array, $jenisToSearch)
+    private function getRandomRuangan($array, $jenisToSearch)
     {
         if ($jenisToSearch == 'PRAKTIKUM') {
             $jenisToSearch = 'LABORATORIUM';
@@ -200,8 +235,75 @@ class AlgoritmaGenetikaController extends Controller
         return $randomElement;
     }
 
+    private function getRuangan($array, $id)
+    {
+
+        $results = array_filter($array, function ($element) use ($id) {
+            return $element['id'] == $id;
+        });
+
+        $randomElement = null;
+
+        if (!empty($results)) {
+            $randomKey = array_rand($results);
+            $randomElement = $results[$randomKey];
+        }
+
+        return $randomElement;
+    }
+
+    private function getTimeSlot($array, $searchIdDay, $searchIdTime)
+    {
+        // dd($course);
+        $results = array_filter($array, function ($item) use ($searchIdDay, $searchIdTime) {
+            return $item['id_day'] == $searchIdDay && $item['id_time'] == $searchIdTime;
+        });
+
+        $randomElement = null;
+
+        if (!empty($results)) {
+            $randomKey = array_rand($results);
+            $randomElement = $results[$randomKey];
+        }
+
+        return $randomElement;
+    }
+
+    // Fungsi untuk memeriksa waktu tidak tersedia
+    // private function isTimeUnavailable($course)
+    // {
+    //     // Ambil data waktu tidak tersedia dari database atau sumber data lainnya
+    //     $unavailableTimes = UnavailableTime::all(); // Menggunakan contoh model UnavailableTime, sesuaikan dengan model Anda
+
+    //     // Periksa apakah waktu matakuliah bertabrakan dengan waktu tidak tersedia
+    //     foreach ($unavailableTimes as $unavailableTime) {
+    //         if ($course->start_time >= $unavailableTime->start_time && $course->end_time <= $unavailableTime->end_time) {
+    //             return true; // Waktu tidak tersedia ditemukan
+    //         }
+    //     }
+
+    //     return false; // Waktu tersedia
+    // }
+
+    // Fungsi untuk memeriksa waktu bersedia
+    // private function isTimeAvailable($course)
+    // {
+    //     // Ambil data waktu bersedia dari database atau sumber data lainnya
+    //     $availableTimes = AvailableTime::all(); // Menggunakan contoh model AvailableTime, sesuaikan dengan model Anda
+
+    //     // Periksa apakah waktu matakuliah cocok dengan waktu bersedia
+    //     foreach ($availableTimes as $availableTime) {
+    //         if ($course->start_time >= $availableTime->start_time && $course->end_time <= $availableTime->end_time) {
+    //             return true; // Waktu bersedia ditemukan
+    //         }
+    //     }
+
+    //     return false; // Waktu tidak bersedia
+    // }
+
+
     // Menggabungkan langkah-langkah algoritma genetika
-    function runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors)
+    private function runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors)
     {
         $population = $this->initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors);
 
@@ -282,6 +384,7 @@ class AlgoritmaGenetikaController extends Controller
 
         $roomsObj = (array) (new Room())->getRoom();
         $rooms = json_decode(json_encode($roomsObj), true);
+
         // dd(count($rooms));
         // dd($rooms);
 
@@ -293,6 +396,15 @@ class AlgoritmaGenetikaController extends Controller
 
         $instructorsObj = (array) (new Lecture)->getDosen();
         $instructors = json_decode(json_encode($instructorsObj), true);
+
+        $resultWb = Wb::all();
+        foreach ($resultWb as $row) {
+            $this->wb[$row->kode_pengampu]['day'] = $row->kode_hari;
+            $this->wb[$row->kode_pengampu]['time'] = $row->kode_jam;
+            $this->wb[$row->kode_pengampu]['ruang'] = $row->kode_ruang;
+        }
+
+        // dd($this->wb);
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors);
         Schedule::truncate();

@@ -20,7 +20,7 @@ class Hour extends Model
     public function getJam()
     {
         return DB::table($this->table)
-            ->select('range_jam')
-            ->pluck('range_jam')->unique()->toArray();
+            ->select('kode', 'range_jam')
+            ->get()->toArray();
     }
 }

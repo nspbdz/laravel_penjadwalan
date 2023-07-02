@@ -16,4 +16,6 @@ class Schedule extends Model
         'kode_ruang',
     ];
     protected $table = 'jadwalkuliah';
+
+    public $timestamps = false;
 }

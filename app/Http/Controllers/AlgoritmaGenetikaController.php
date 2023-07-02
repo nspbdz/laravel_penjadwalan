@@ -7,6 +7,7 @@ use App\Models\Hari;
 use App\Models\Hour;
 use App\Models\Lecture;
 use App\Models\Room;
+use App\Models\Schedule;
 
 class AlgoritmaGenetikaController extends Controller
 {
@@ -20,6 +21,7 @@ class AlgoritmaGenetikaController extends Controller
 
             foreach ($courses as $course) {
                 $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                // dd($randomTimeslot);
                 // dd(count($rooms));
                 // dd($rooms);
                 // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
@@ -29,11 +31,14 @@ class AlgoritmaGenetikaController extends Controller
                 $dosenId = $explode[1];
                 $instructor = $this->checkDosen($dosenId, $instructors);
                 // $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
+                $sks = $explode[4];
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
                     'room' => $randomRoom,
                     'instructor' => $instructor,
+                    'class' => ['id' => $explode[3]],
+                    'sks' => $sks
                 ];
             }
 
@@ -57,18 +62,25 @@ class AlgoritmaGenetikaController extends Controller
         // dd($schedule);
         // dd($schedule);
         foreach ($schedule as $course) {
+            // dd($course);
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
             $instructorId = $course['instructor']['id'];
+            $classId = $course['class']['id'];
+            $sks = $course['sks'];
 
-            $timeslotRoom = $timeslotId . '-' . $roomId;
-            $timeslotInstructor = $timeslotId . '-' . $instructorId;
+            for ($i = 0; $i < $sks; $i++) {
+                $timeslotRoom = $timeslotId + $i . '-' . $roomId;
+                $timeslotInstructor = $timeslotId + $i . '-' . $instructorId;
+                $timeslotClass = $timeslotId + $i . '-' . $classId;
+            }
 
-            if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor])) {
+            if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor]) || isset($timeSlots[$timeslotClass])) {
                 $fitness++; // Bentrok ditemukan, tambahkan poin fitness
             } else {
                 $timeSlots[$timeslotRoom] = true;
                 $timeSlots[$timeslotInstructor] = true;
+                $timeSlots[$timeslotClass] = true;
             }
 
             // Implementasikan aturan penilaian fitness tambahan sesuai kebutuhan
@@ -151,6 +163,8 @@ class AlgoritmaGenetikaController extends Controller
                 $individual[$course]['timeslot'] = $randomTimeslot;
                 $individual[$course]['room'] = $randomRoom;
                 $individual[$course]['instructor'] = $instructor;
+                $individual[$course]['class'] = ['id' => $explode[3]];
+                $individual[$course]['sks'] = $explode[4];
             }
         }
 
@@ -235,6 +249,7 @@ class AlgoritmaGenetikaController extends Controller
         // Sample $courses = ['Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'];
         $courses = (new Course())->getCourse(request('tahun_akademik'), request('semester_tipe'));
 
+        // dd($courses);
         // Contoh $timeslots = [
         //     ['id' => 1, 'day' => 'Monday', 'time' => '08:00'],
         //     ['id' => 2, 'day' => 'Monday', 'time' => '10:00'],
@@ -250,8 +265,10 @@ class AlgoritmaGenetikaController extends Controller
             foreach ($times as $time) {
                 $timeslots[] = [
                     'id' => $i,
-                    'day' => $hari,
-                    'time' => $time
+                    'day' => $hari->nama,
+                    'time' => $time->range_jam,
+                    'id_day' => $hari->kode,
+                    'id_time' => $time->kode
                 ];
                 $i++;
             }
@@ -278,7 +295,7 @@ class AlgoritmaGenetikaController extends Controller
         $instructors = json_decode(json_encode($instructorsObj), true);
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors);
-
+        Schedule::truncate();
         // Tampilkan hasil penjadwalan
         echo "Best Schedule:<br>";
         echo "<table>";
@@ -289,12 +306,22 @@ class AlgoritmaGenetikaController extends Controller
         <td>Dosen</td>
         </tr>";
         foreach ($result as $course => $details) {
+            // dd($details);
             echo "<tr>";
             echo "<td>$course<br>";
             echo "<td>{$details['timeslot']['day']} {$details['timeslot']['time']}</td>";
             echo "<td>{$details['room']['name']}</td>";
             echo "<td>{$details['instructor']['name']}</td>";
             echo "</tr>";
+            $explode = explode(' - ', $course);
+
+            $schedule = new Schedule;
+            $schedule->kode_pengampu = $explode[0];
+            $schedule->kode_jam = $details['timeslot']['id_time'];
+            $schedule->kode_hari = $details['timeslot']['id_day'];
+            $schedule->kode_ruang = $details['room']['id'];
+
+            $schedule->save();
         }
         echo "</table>";
     }

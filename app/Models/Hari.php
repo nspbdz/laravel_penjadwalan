@@ -19,7 +19,7 @@ class Hari extends Model
     public function getHari()
     {
         return DB::table($this->table)
-            ->select('nama')
-            ->pluck('nama')->unique()->toArray();
+            ->select('kode', 'nama')
+            ->get()->toArray();
     }
 }

@@ -140,5 +140,13 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
         Route::post('/wtb/update', 'WtbController@update');
         Route::get('/wtb/edit/{id}', 'WtbController@edit')->name('wtb.edit');
         Route::delete('/wtb/hapus/{id}', 'WtbController@hapus')->name('wtb.hapus');
+
+        Route::get('/wb/datatable', 'WbController@datas')->name('wb.datatable');
+        Route::get('/wb', 'WbController@index')->name('wb.index');
+        Route::get('/wb/add', 'WbController@add')->name('wb.add');
+        Route::post('/wb/store', 'WbController@store')->name('wb.store');
+        Route::post('/wb/update', 'WbController@update');
+        Route::get('/wb/edit/{id}', 'WbController@edit')->name('wb.edit');
+        Route::delete('/wb/hapus/{id}', 'WbController@hapus')->name('wb.hapus');
     });
 });

@@ -29,20 +29,7 @@ class ProccessController extends Controller
     protected $bisnisController;
 
 
-    // function __construct()
-    // {
-    //     parent::__construct();
-    // 	$this->load->model(array('m_dosen',
-    // 							 'm_matakuliah',
-    // 							 'm_ruang',
-    // 							 'm_jam',
-    // 							 'm_hari',
-    // 							 'm_pengampu',
-    // 							 'm_waktu_tidak_bersedia',
-    // 							 'm_jadwalkuliah'));
-    // 	include_once("genetik.php");
-    // 	define('IS_TEST','FALSE');
-    // }
+
 
 
 
@@ -55,15 +42,29 @@ class ProccessController extends Controller
 
 
     // // dd($genetik);
+    // public function getProdi(Request $request)
+    // {
+    //     $prodi = $request->get('prodi');
+
+    //     $kelas = DB::table('kelas')
+    //     ->where('jenis_kelas','=',$prodi)
+    //     ->get();
+    //   dd($prodi);
+    //   $cek= array();
+    //   foreach($kelas as $value){
+
+    //       //dd($value);
+
+    //       $cek[$value->kode] = $value->jenis_kelas;
+    //   }
+
+
+    //     return response()->json($cek);
+    // }
     public function masuk()
     {
-        $tidakBentrok = [];
         $bentrokdata = [];
-        // $jadwal = DB::table('jadwalkuliah')
-        // ->select('jadwalkuliah.*', 'pengampu.kode_dosen', 'pengampu.kelas', 'matakuliah.sks')
-        // ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
-        // ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
-        // ->get();
+        $tidakBentrok = [];
         $jadwal = DB::table('jadwalkuliah AS a')
             ->select([
                 'e.nama AS hari',
@@ -97,6 +98,7 @@ class ProccessController extends Controller
             ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
             ->leftJoin('ruang AS f', 'a.kode_ruang', '=', 'f.kode')
             ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
+            ->where('c.prodi', '=', 'ti')
             ->orderBy('kdhari')
             ->orderBy('kdjam')
             ->orderBy('kelas')
@@ -286,7 +288,9 @@ class ProccessController extends Controller
             if ($bentrok[$i] == 1) {
                 $dataBentrok = [
                     $jam_a = $jadwal[$i]->hari,
+                    $kdjam = $jadwal[$i]->kdjam,
                     $hari_a = $jadwal[$i]->sesi,
+
                     $ruang_a = $jadwal[$i]->jam_kuliah,
                     $dosen_a = $jadwal[$i]->nama_mk,
                     $kelas_a = $jadwal[$i]->dosen,
@@ -301,6 +305,7 @@ class ProccessController extends Controller
             if ($bentrok[$i] == 0) {
                 $dataBentrok = [
                     $jam_a = $jadwal[$i]->hari,
+
                     $hari_a = $jadwal[$i]->sesi,
                     $ruang_a = $jadwal[$i]->jam_kuliah,
                     $dosen_a = $jadwal[$i]->nama_mk,
@@ -315,89 +320,345 @@ class ProccessController extends Controller
             }
         }
 
-
-
-
-        $data['bentrok'] = $bentrok; // kalo misal ada kelas / ruangan / dosen bentrok, nilainya di array ini jadi 1 
-        //dd($bentrok);
-        $data['rs_jadwal'] = Schedule::get();
-        //$query = DB::table('jadwalkuliah AS a')
-        //  ->select([
-        //      'e.nama AS hr',
-        //      'a.kode_jam AS kode_jam',
-        //      'g.range_jam',
-        //      'b.kelas as kelas',
-        //      DB::raw("MAX(CASE WHEN b.kelas  THEN CONCAT(c.nama, '\n', ' - ', d.nama) ELSE NULL END) AS kelas_data"),
-
-        //  ])
-        //  ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
-        //  ->leftJoin('matakuliah AS c', 'b.kode_mk', '=', 'c.kode')
-        //  ->leftJoin('dosen AS d', 'b.kode_dosen', '=', 'd.kode')
-        //  ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
-        //  ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
-        //  ->groupBy('hr', 'kode_jam', 'range_jam','kelas','kelas_data')
-        //  ->orderBy('hr', 'DESC')
-        //  ->get();
-        $query = DB::table('jadwalkuliah AS a')
+        $bentrokdatarpl = [];
+        $tidakBentrokrpl = [];
+        $jadwalrpl = DB::table('jadwalkuliah AS a')
             ->select([
-                'e.nama AS hr',
-                'g.kode as kdjam',
-                'g.range_jam',
-                'b.kelas as kelas',
-                DB::raw("GROUP_CONCAT(DISTINCT CONCAT(c.nama, '\n', ' - ', d.nama) ORDER BY c.nama SEPARATOR '\n') AS kelas_data")
+                'e.nama AS hari',
+                DB::raw("CONCAT_WS('-', CONCAT('(', g.kode), CONCAT((SELECT kode 
+                     FROM jam 
+                     WHERE kode = (SELECT jm.kode 
+                         FROM jam jm 
+                         WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1)),')')) AS sesi"),
+                DB::raw("CONCAT_WS('-', SUBSTRING(g.range_jam, 1, 5), 
+                     (SELECT SUBSTRING(range_jam, 7, 5) 
+                     FROM jam 
+                     WHERE kode = (SELECT jm.kode 
+                         FROM jam jm 
+                         WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1))) AS jam_kuliah"),
+                'c.nama AS nama_mk',
+                'c.sks AS sks',
+                'c.semester AS semester',
+                'b.kelas AS kelas',
+                'd.nama AS dosen',
+                'e.kode as kdhari',
+                'f.nama AS ruang',
+                'f.kode as kdruang',
+                'a.kode_jam as kdjam',
+                'd.kode as kddos'
+
+
             ])
             ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
             ->leftJoin('matakuliah AS c', 'b.kode_mk', '=', 'c.kode')
             ->leftJoin('dosen AS d', 'b.kode_dosen', '=', 'd.kode')
             ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
+            ->leftJoin('ruang AS f', 'a.kode_ruang', '=', 'f.kode')
             ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
-            ->groupBy('hr', 'kdjam', 'range_jam', 'kelas')
-            ->orderBy('hr', 'desc')
-            // ->orderBy('kode_jam')
+            ->where('c.prodi', '=', 'rpl')
+            ->orderBy('kdhari')
+            ->orderBy('kdjam')
+            ->orderBy('kelas')
             ->get();
-        // $query = DB::table('jadwalkuliah AS a')
-        // ->select([
-        //     'e.nama AS hari',
-        //     DB::raw("CONCAT_WS('-', CONCAT('(', g.kode), CONCAT((SELECT kode 
-        //         FROM jam 
-        //         WHERE kode = (SELECT jm.kode 
-        //             FROM jam jm 
-        //             WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1)),')')) AS sesi"),
-        //     DB::raw("CONCAT_WS('-', SUBSTRING(g.range_jam, 1, 5), 
-        //         (SELECT SUBSTRING(range_jam, 7, 5) 
-        //         FROM jam 
-        //         WHERE kode = (SELECT jm.kode 
-        //             FROM jam jm 
-        //             WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1))) AS jam_kuliah"),
-        //     'c.nama AS nama_mk',
-        //     'c.sks AS sks',
-        //     'c.semester AS semester',
-        //     'b.kelas AS kelas',
-        //     'd.nama AS dosen',
-        //     'f.nama AS ruang'
-        // ])
-        // ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
-        // ->leftJoin('matakuliah AS c', 'b.kode_mk', '=', 'c.kode')
-        // ->leftJoin('dosen AS d', 'b.kode_dosen', '=', 'd.kode')
-        // ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
-        // ->leftJoin('ruang AS f', 'a.kode_ruang', '=', 'f.kode')
-        // ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
-        // ->orderBy('e.kode')
-        // ->orderBy('jam_kuliah')
-        // ->orderBy('kelas')
-        // ->get();
 
-        return view(
-            'schedule.index',
-            [
-                'data' => $data,
-                'query' => $query,
-                'bentrok' => $bentrok,
-                'tidakBentrok' => $tidakBentrok,
-                'bentrokdata' => $bentrokdata,
-                'jadwal' => $jadwal
-            ]
-        );
+        $jumlahJadwal = count($jadwalrpl);
+        //dd($jumlahJadwal);
+        $jumlah_bentrokrpl = 0;
+        $bentrok = array();
+        for ($i = 0; $i < $jumlahJadwal; $i++) {
+            $bentrokrpl[$i] = 0;
+            $jam_c = intval($jadwalrpl[$i]->kdjam);
+            $hari_c = intval($jadwalrpl[$i]->kdhari);
+            $ruang_c = intval($jadwalrpl[$i]->kdruang);
+            $dosen_c = intval($jadwalrpl[$i]->kddos);
+            $kelas_c = $jadwalrpl[$i]->kelas;
+            $sksrpl = intval($jadwalrpl[$i]->sks);
+
+
+
+            for ($j = 0; $j < $jumlahJadwal; $j++) {
+                $jam_d = intval($jadwalrpl[$j]->kdjam);
+                $hari_d = intval($jadwalrpl[$j]->kdhari);
+                $ruang_d = intval($jadwalrpl[$j]->kdruang);
+                $dosen_d = intval($jadwalrpl[$j]->kddos);
+                $kelas_d = $jadwalrpl[$j]->kelas;
+                //dd($sks);
+                if ($i == $j) {
+                    continue;
+                }
+                //dd($i, $j, $jam_c, $jam_b, $hari_a, $hari_b, $ruang_a, $ruang_b);
+                // cek ruangan
+                if (
+                    $jam_c == $jam_d &&
+                    $hari_c == $hari_d &&
+                    $ruang_c == $ruang_d
+                ) {
+                    $bentrokrpl[$i] = 1;
+                    $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                }
+                if ($sksrpl >= 2) {
+                    if (
+                        $jam_c + 1 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $ruang_c == $ruang_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 3) {
+                    if (
+                        $jam_c + 2 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $ruang_c == $ruang_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 4) {
+                    if (
+                        $jam_c + 3 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $ruang_c == $ruang_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 5) {
+                    if (
+                        $jam_c + 4 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $ruang_c == $ruang_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+
+                //cek kelas
+                if (
+                    $jam_c == $jam_d &&
+                    $hari_c == $hari_d &&
+                    $kelas_c == $kelas_d
+                ) {
+                    $bentrokrpl[$i] = 1;
+                    $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                }
+                if ($sksrpl >= 2) {
+                    if (
+                        $jam_c + 1 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $kelas_c == $kelas_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 3) {
+                    if (
+                        $jam_c + 2 == $jam_d &&
+                        $hari_a == $hari_d &&
+                        $kelas_a == $kelas_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 4) {
+                    if (
+                        $jam_c + 3 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $kelas_c == $kelas_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 5) {
+                    if (
+                        $jam_c + 4 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $kelas_c == $kelas_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+
+                //cek dosen
+                if (
+                    //ketika jam, hari, dan dosen sama
+                    $jam_c == $jam_d &&
+                    $hari_c == $hari_d &&
+                    $dosen_c == $dosen_d
+                ) {
+                    $bentrokrpl[$i] = 1;
+                    $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                }
+                if ($sksrpl >= 2) {
+                    if (
+                        //ketika jam, hari, dan dosen sama
+                        $jam_c + 1 == $jam_d  &&
+                        $hari_c == $hari_d &&
+                        $dosen_c == $dosen_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 3) {
+                    if (
+                        //ketika jam, hari, dan dosen sama
+                        $jam_c + 2 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $dosen_c == $dosen_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 4) {
+                    if (
+                        //ketika jam, hari, dan dosen sama
+                        $jam_c + 3 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $dosen_c == $dosen_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+                if ($sksrpl >= 5) {
+                    if (
+                        //ketika jam, hari, dan dosen sama
+                        $jam_c + 4 == $jam_d &&
+                        $hari_c == $hari_d &&
+                        $dosen_c == $dosen_d
+                    ) {
+                        $bentrokrpl[$i] = 1;
+                        $jumlah_bentrokrpl = $jumlah_bentrokrpl + 1;
+                    }
+                }
+            }
+            if ($bentrokrpl[$i] == 1) {
+                $dataBentrokrpl = [
+                    $jam_c = $jadwalrpl[$i]->hari,
+                    $hari_a = $jadwalrpl[$i]->sesi,
+                    $ruang_a = $jadwalrpl[$i]->jam_kuliah,
+                    $dosen_a = $jadwalrpl[$i]->nama_mk,
+                    $kelas_a = $jadwalrpl[$i]->dosen,
+                    $sks = $jadwalrpl[$i]->sks,
+                    $sks = $jadwalrpl[$i]->semester,
+                    $sks = $jadwalrpl[$i]->kelas,
+                    $sks = $jadwalrpl[$i]->ruang,
+                ];
+
+                $bentrokdatarpl[] = $dataBentrokrpl;
+            }
+            if ($bentrokrpl[$i] == 0) {
+                $dataBentrokrpl = [
+                    $jam_c = $jadwalrpl[$i]->hari,
+                    $hari_a = $jadwalrpl[$i]->sesi,
+                    $ruang_a = $jadwalrpl[$i]->jam_kuliah,
+                    $dosen_a = $jadwalrpl[$i]->nama_mk,
+                    $kelas_a = $jadwalrpl[$i]->dosen,
+                    $sks = $jadwalrpl[$i]->sks,
+                    $sks = $jadwalrpl[$i]->semester,
+                    $sks = $jadwalrpl[$i]->kelas,
+                    $sks = $jadwalrpl[$i]->ruang,
+                ];
+
+                $tidakBentrokrpl[] = $dataBentrokrpl;
+            }
+        }
+
+
+
+        $kelasti = DB::table('kelas')
+            ->where('jenis_kelas', '=', 'ti')
+            ->get();
+        $viewti = DB::table('jadwalkuliah')
+            ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
+            ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
+            ->leftJoin('dosen', 'pengampu.kode_dosen', '=', 'dosen.kode')
+            ->leftJoin('hari', 'jadwalkuliah.kode_hari', '=', 'hari.kode')
+            ->leftJoin('jam', 'jadwalkuliah.kode_jam', '=', 'jam.kode')
+            ->leftJoin('ruang', 'jadwalkuliah.kode_ruang', '=', 'ruang.kode')
+            ->leftJoin('kelas', 'pengampu.kelas', '=', 'kelas.nama')
+            ->select(
+                'hari.nama AS Hari',
+                'jam.kode AS kode_jam',
+                'jam.range_jam as jam',
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3C"),
+            )
+
+            ->groupBy('hari.kode', 'hari.nama', 'jam.kode', 'jam.range_jam')
+            ->where('kelas.jenis_kelas', '=', 'ti')
+            ->orderBy('hari.kode', 'asc')
+            ->orderBy('jam.kode', 'asc')
+            ->get();
+        $kelasrpl = DB::table('kelas')
+            ->where('jenis_kelas', '=', 'rpl')
+            ->get();
+        $viewrpl = DB::table('jadwalkuliah')
+            ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
+            ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
+            ->leftJoin('dosen', 'pengampu.kode_dosen', '=', 'dosen.kode')
+            ->leftJoin('hari', 'jadwalkuliah.kode_hari', '=', 'hari.kode')
+            ->leftJoin('jam', 'jadwalkuliah.kode_jam', '=', 'jam.kode')
+            ->leftJoin('ruang', 'jadwalkuliah.kode_ruang', '=', 'ruang.kode')
+            ->leftJoin('kelas', 'pengampu.kelas', '=', 'kelas.nama')
+            ->select(
+                'hari.nama AS Hari',
+                'jam.kode AS kode_jam',
+                'jam.range_jam as jam',
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL1A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL1A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL1B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL1B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL1C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL1C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL2A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL2A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL2B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL2B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL3' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL3"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D4RPL4' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D4RPL4"),
+            )
+
+            ->groupBy('hari.kode', 'hari.nama', 'jam.kode', 'jam.range_jam')
+            ->where('kelas.jenis_kelas', '=', 'rpl')
+            ->orderBy('hari.kode', 'asc')
+            ->orderBy('jam.kode', 'asc')
+            ->get();
+
+
+
+
+
+
+        return view('schedule.index', ['bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'tidakBentrokrpl' => $tidakBentrokrpl, 'bentrokdatarpl' => $bentrokdatarpl, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
+    }
+
+    public function updateKodeJam(Request $request)
+    {
+        // Mendapatkan nomor baris dan kode jam dari permintaan AJAX
+        $row = $request->input('row');
+        $kodeJam = $request->input('kodeJam');
+
+        // Lakukan operasi untuk memperbarui kode jam dalam database
+        // Misalnya, jika Anda memiliki model Schedule, Anda dapat menggunakan kode berikut:
+        $schedule = Schedule::find($row + 1); // Nomor baris dimulai dari 0, sementara ID dimulai dari 1
+        $schedule->kode_jam = $kodeJam;
+        $schedule->save();
+
+        // Mengembalikan respons sukses dalam bentuk JSON
+        return response()->json(['success' => true]);
     }
     public function __construct(
         Lecture $m_dosen,
@@ -420,7 +681,7 @@ class ProccessController extends Controller
         $this->m_jadwalkuliah = $m_jadwalkuliah;
     }
 
-    public function index(Request $request)
+    public  function index(Request $request)
     {
         set_time_limit(120000);
         $data = array();
@@ -502,7 +763,7 @@ class ProccessController extends Controller
                         //dd($fitnessAfterMutation[2]);
                         if ($fitnessAfterMutation[$j] == 1) {
 
-                            Schedule::truncate();
+                            //Schedule::truncate();
 
 
                             $jadwal_kuliah = array(array());
@@ -522,7 +783,7 @@ class ProccessController extends Controller
                                 $kode_ruang = intval($jadwal_kuliah[$k][3]);
 
 
-                                DB::table('jadwalkuliah')->insertOrIgnore([
+                                DB::table('jadwalkuliah')->insert([
                                     'kode_pengampu' => $kode_pengampu,
                                     'kode_jam' => $kode_jam,
                                     'kode_hari' => $kode_hari,
@@ -549,7 +810,9 @@ class ProccessController extends Controller
                         break;
                     }
                 }
-                //echo "<pre>";print_r($fitness_akhir); exit(); //buat liat fitness setelah mutasi
+                echo "<pre>";
+                print_r($fitness_akhir);
+                exit(); //buat liat fitness setelah mutasi
                 if (!$found) {
                     $data['msg'] = 'Tidak Ditemukan Solusi Optimal';
                 }
@@ -743,7 +1006,7 @@ class ProccessController extends Controller
                 if ($sks >= 2) {
                     if (
                         //ketika jam, hari, dan dosen sama
-                        ($jam_a + 1) == $jam_b &&
+                        $jam_a + 1 == $jam_b &&
                         $hari_a == $hari_b &&
                         $dosen_a == $dosen_b
                     ) {
@@ -754,7 +1017,7 @@ class ProccessController extends Controller
                 if ($sks >= 3) {
                     if (
                         //ketika jam, hari, dan dosen sama
-                        ($jam_a + 2) == $jam_b &&
+                        $jam_a + 2 == $jam_b &&
                         $hari_a == $hari_b &&
                         $dosen_a == $dosen_b
                     ) {
@@ -765,7 +1028,7 @@ class ProccessController extends Controller
                 if ($sks >= 4) {
                     if (
                         //ketika jam, hari, dan dosen sama
-                        ($jam_a + 3) == $jam_b &&
+                        $jam_a + 3 == $jam_b &&
                         $hari_a == $hari_b &&
                         $dosen_a == $dosen_b
                     ) {
@@ -776,7 +1039,7 @@ class ProccessController extends Controller
                 if ($sks >= 5) {
                     if (
                         //ketika jam, hari, dan dosen sama
-                        ($jam_a + 4) == $jam_b &&
+                        $jam_a + 4 == $jam_b &&
                         $hari_a == $hari_b &&
                         $dosen_a == $dosen_b
                     ) {
@@ -939,40 +1202,73 @@ class ProccessController extends Controller
         //       $cek = count($bentrok[1]);
         //    dd($cek);
         $data['rs_jadwal'] = Schedule::get();
-        // print_r($data['rs_jadwal']->result()); exit();
-        // dd($rs_jadwal);
-
-        $query = DB::table('jadwalkuliah AS a')
-            ->select([
-                'e.nama AS hari',
-                DB::raw("CONCAT_WS('-', CONCAT('(', g.kode), CONCAT((SELECT kode 
-            FROM jam 
-            WHERE kode = (SELECT jm.kode 
-                FROM jam jm 
-                WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1)),')')) AS sesi"),
-                DB::raw("CONCAT_WS('-', SUBSTRING(g.range_jam, 1, 5), 
-            (SELECT SUBSTRING(range_jam, 7, 5) 
-            FROM jam 
-            WHERE kode = (SELECT jm.kode 
-                FROM jam jm 
-                WHERE SUBSTRING(jm.range_jam, 1, 5) = SUBSTRING(g.range_jam, 1, 5)) + (c.sks - 1))) AS jam_kuliah"),
-                'c.nama AS nama_mk',
-                'c.sks AS sks',
-                'c.semester AS semester',
-                'b.kelas AS kelas',
-                'd.nama AS dosen',
-                'f.nama AS ruang'
-            ])
-            ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
-            ->leftJoin('matakuliah AS c', 'b.kode_mk', '=', 'c.kode')
-            ->leftJoin('dosen AS d', 'b.kode_dosen', '=', 'd.kode')
-            ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
-            ->leftJoin('ruang AS f', 'a.kode_ruang', '=', 'f.kode')
-            ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
-            ->orderBy('e.kode')
-            ->orderBy('jam_kuliah')
+        $kelasti = DB::table('kelas')
+            ->where('jenis_kelas', '=', 'ti')
             ->get();
-        return view('schedule.index', ['data' => $data, 'query' => $query, 'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'jadwal' => $jadwal]);
+        $viewti = DB::table('jadwalkuliah')
+            ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
+            ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
+            ->leftJoin('dosen', 'pengampu.kode_dosen', '=', 'dosen.kode')
+            ->leftJoin('hari', 'jadwalkuliah.kode_hari', '=', 'hari.kode')
+            ->leftJoin('jam', 'jadwalkuliah.kode_jam', '=', 'jam.kode')
+            ->leftJoin('ruang', 'jadwalkuliah.kode_ruang', '=', 'ruang.kode')
+            ->leftJoin('kelas', 'pengampu.kelas', '=', 'kelas.nama')
+            ->select(
+                'hari.nama AS Hari',
+                'jam.kode AS kode_jam',
+                'jam.range_jam as jam',
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI2C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI2C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3C"),
+            )
+
+            ->groupBy('hari.nama', 'jam.kode', 'jam.range_jam')
+            ->where('kelas.jenis_kelas', '=', 'ti')
+            ->orderBy('hari.kode', 'asc')
+            ->orderBy('jam.kode', 'asc')
+            ->get();
+        $kelasrpl = DB::table('kelas')
+            ->where('jenis_kelas', '=', 'rpl')
+            ->get();
+        $viewrpl = DB::table('jadwalkuliah')
+            ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
+            ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
+            ->leftJoin('dosen', 'pengampu.kode_dosen', '=', 'dosen.kode')
+            ->leftJoin('hari', 'jadwalkuliah.kode_hari', '=', 'hari.kode')
+            ->leftJoin('jam', 'jadwalkuliah.kode_jam', '=', 'jam.kode')
+            ->leftJoin('ruang', 'jadwalkuliah.kode_ruang', '=', 'ruang.kode')
+            ->leftJoin('kelas', 'pengampu.kelas', '=', 'kelas.nama')
+            ->select(
+                'hari.nama AS Hari',
+                'jam.kode AS kode_jam',
+                'jam.range_jam as jam',
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL1A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL1A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL1B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL1B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL1C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL1C"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL2A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL2A"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL2B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL2B"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL3' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL3"),
+                DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL4' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL4"),
+            )
+
+            ->groupBy('hari.nama', 'jam.kode', 'jam.range_jam')
+            ->where('kelas.jenis_kelas', '=', 'rpl')
+            ->orderBy('hari.kode', 'asc')
+            ->orderBy('jam.kode', 'asc')
+            ->get();
+
+
+
+
+
+
+        return view('schedule.index', ['data' => $data, 'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
     }
 
 

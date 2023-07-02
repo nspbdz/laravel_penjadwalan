@@ -103,7 +103,7 @@
                         <li><a class="nav-link collapsed" href="/wtb">
                                 <span>waktu tidak tersedia </span>
                             </a></li>
-                        <li><a class="nav-link collapsed" href="/wtb">
+                        <li><a class="nav-link collapsed" href="/wb">
                                 <span>waktu tersedia </span>
                             </a></li>
 

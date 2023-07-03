@@ -148,5 +148,8 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
         Route::post('/wb/update', 'WbController@update');
         Route::get('/wb/edit/{id}', 'WbController@edit')->name('wb.edit');
         Route::delete('/wb/hapus/{id}', 'WbController@hapus')->name('wb.hapus');
+        Route::post('/updateKodeJam', 'ProccessController@updateKodeJam')->name('schedule.updateKodeJam');
+        Route::get('/wb/datatables', 'WbController@datas')->name('schedule.getprodi');
+
     });
 });

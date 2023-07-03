@@ -30,7 +30,6 @@ class AlgoritmaGenetikaController extends Controller
                 $jenis = $explode[2];
                 $class = $explode[3];
                 $sks = $explode[4];
-                // dd($rooms);
                 if (!empty($this->wb[$courseId])) {
                     $day = $this->wb[$courseId]['day'];
                     $time = $this->wb[$courseId]['time'];
@@ -41,16 +40,11 @@ class AlgoritmaGenetikaController extends Controller
                     $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
                     $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 } else {
-                    // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
                     $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                     $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 }
 
-
-
                 $instructor = $this->checkDosen($dosenId, $instructors);
-                // $randomInstructor = $instructors[rand(0, count($instructors) - 1)];
-
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
@@ -63,7 +57,6 @@ class AlgoritmaGenetikaController extends Controller
 
             $population[] = $schedule;
         }
-        // dd($population);
 
         return $population;
     }
@@ -79,11 +72,7 @@ class AlgoritmaGenetikaController extends Controller
         // Contoh: Menambahkan satu poin fitness jika tidak ada bentrok
         $timeSlots = [];
 
-        // dd($schedule);
-        // dd($schedule);
         foreach ($schedule as $course) {
-            // dd($course);
-
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
             $instructorId = $course['instructor']['id'];
@@ -95,14 +84,6 @@ class AlgoritmaGenetikaController extends Controller
                 $timeslotInstructor = $timeslotId + $i . 'T-I' . $instructorId;
                 $timeslotClass = $timeslotId + $i . 'T-C' . $classId;
             }
-
-            // if ($this->isTimeUnavailable($course)) {
-            //     // Mengurangi fitness jika waktu tidak tersedia
-            //     $fitness -= 100; // Nilai pengurangan fitness yang bisa disesuaikan
-            // } elseif ($this->isTimeAvailable($course)) {
-            //     // Menambah fitness jika waktu tersedia
-            //     $fitness += 1; // Nilai penambahan fitness yang bisa disesuaikan
-            // }
 
             if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor]) || isset($timeSlots[$timeslotClass])) {
                 $fitness++; // Bentrok ditemukan, tambahkan poin fitness
@@ -187,7 +168,6 @@ class AlgoritmaGenetikaController extends Controller
                 $jenis = $explode[2];
                 $class = $explode[3];
                 $sks = $explode[4];
-                // $randomRoom = $rooms[rand(0, count($rooms) - 1)];
                 if (!empty($this->wb[$courseId])) {
                     $day = $this->wb[$courseId]['day'];
                     $time = $this->wb[$courseId]['time'];
@@ -198,7 +178,6 @@ class AlgoritmaGenetikaController extends Controller
                     $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
                     $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 } else {
-                    // $randomTimeslot = $this->getRandomTimeSlot($timeslots, $course);
                     $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                     $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 }
@@ -219,7 +198,6 @@ class AlgoritmaGenetikaController extends Controller
     {
         $key = array_search($id, array_column($data, 'id'));
         if ($key !== false) {
-            // $foundElement = $data[$key];
             return $data[$key];
         }
         return 'Dosen Tidak Ditemukan';
@@ -263,7 +241,6 @@ class AlgoritmaGenetikaController extends Controller
 
     private function getTimeSlot($array, $searchIdDay, $searchIdTime)
     {
-        // dd($course);
         $results = array_filter($array, function ($item) use ($searchIdDay, $searchIdTime) {
             return $item['id_day'] == $searchIdDay && $item['id_time'] == $searchIdTime;
         });
@@ -295,46 +272,6 @@ class AlgoritmaGenetikaController extends Controller
 
         return $randomElement;
     }
-
-    //     $compare = function ($a, $b) {
-    //     return $a <=> $b;
-    // };
-
-    // $arrahasil = array_udiff($array, $arrayhapus, $compare);
-    // print_r($arrahasil);
-
-    // Fungsi untuk memeriksa waktu tidak tersedia
-    // private function isTimeUnavailable($course)
-    // {
-    //     // Ambil data waktu tidak tersedia dari database atau sumber data lainnya
-    //     $unavailableTimes = UnavailableTime::all(); // Menggunakan contoh model UnavailableTime, sesuaikan dengan model Anda
-
-    //     // Periksa apakah waktu matakuliah bertabrakan dengan waktu tidak tersedia
-    //     foreach ($unavailableTimes as $unavailableTime) {
-    //         if ($course->start_time >= $unavailableTime->start_time && $course->end_time <= $unavailableTime->end_time) {
-    //             return true; // Waktu tidak tersedia ditemukan
-    //         }
-    //     }
-
-    //     return false; // Waktu tersedia
-    // }
-
-    // Fungsi untuk memeriksa waktu bersedia
-    // private function isTimeAvailable($course)
-    // {
-    //     // Ambil data waktu bersedia dari database atau sumber data lainnya
-    //     $availableTimes = AvailableTime::all(); // Menggunakan contoh model AvailableTime, sesuaikan dengan model Anda
-
-    //     // Periksa apakah waktu matakuliah cocok dengan waktu bersedia
-    //     foreach ($availableTimes as $availableTime) {
-    //         if ($course->start_time >= $availableTime->start_time && $course->end_time <= $availableTime->end_time) {
-    //             return true; // Waktu bersedia ditemukan
-    //         }
-    //     }
-
-    //     return false; // Waktu tidak bersedia
-    // }
-
 
     // Menggabungkan langkah-langkah algoritma genetika
     private function runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors)
@@ -368,9 +305,7 @@ class AlgoritmaGenetikaController extends Controller
                 $bestFitness = $fitness;
                 $bestIndividual = $individual;
             }
-            // $bestIndividual['fitness'] = $fitness;
         }
-        // dd($bestIndividual);
         return $bestIndividual;
     }
 
@@ -378,10 +313,10 @@ class AlgoritmaGenetikaController extends Controller
 
     public function build()
     {
-        $populationSize = 10;
+        $populationSize = request('jumlah_populasi');
         $tournamentSize = 5;
-        $mutationRate = 40; // Persentase mutasi (0-100)
-        $maxGenerations = 1000;
+        $mutationRate = (request('probabilitas_mutasi') * 100); // Persentase mutasi (0-100)
+        $maxGenerations = request('jumlah_generasi');
 
         // Sample $courses = ['Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'];
         $courses = (new Course())->getCourse(request('tahun_akademik'), request('semester_tipe'));
@@ -400,7 +335,7 @@ class AlgoritmaGenetikaController extends Controller
         $i = 0;
         foreach ($days as $hari) {
             foreach ($times as $time) {
-                if($hari->kode == 5 && ($time->kode == 5 || $time->kode == 6)){
+                if ($hari->kode == 5 && ($time->kode == 5 || $time->kode == 6)) {
                     continue;
                 }
                 $timeslots[] = [

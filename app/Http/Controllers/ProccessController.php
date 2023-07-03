@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-//use App\Http\Controllers\BisnisController;
 use App\Models\Support;
 use App\Models\Hour;
 use App\Models\Day;
@@ -16,8 +15,6 @@ use Illuminate\Support\Facades\DB;
 
 class ProccessController extends Controller
 {
-    private $induk = array();
-    private $individu = array(array(array()));
     protected $m_dosen;
     protected $m_matakuliah;
     protected $m_ruang;
@@ -28,44 +25,12 @@ class ProccessController extends Controller
     protected $m_jadwalkuliah;
     protected $bisnisController;
 
-
-
-
-
-
-
-
-
-    // $jumlah_generasi = config('config.jumlah_generasi');
-    // // dd($jumlah_generasi);
-    // $genetik = new BisnisController(); //kode jam dhuhur
-
-
-    // // dd($genetik);
-    // public function getProdi(Request $request)
-    // {
-    //     $prodi = $request->get('prodi');
-
-    //     $kelas = DB::table('kelas')
-    //     ->where('jenis_kelas','=',$prodi)
-    //     ->get();
-    //   dd($prodi);
-    //   $cek= array();
-    //   foreach($kelas as $value){
-
-    //       //dd($value);
-
-    //       $cek[$value->kode] = $value->jenis_kelas;
-    //   }
-
-
-    //     return response()->json($cek);
-    // }
     public function masuk()
     {
+        $prodi = request('getprodi') ?? '';
         $bentrokdata = [];
         $tidakBentrok = [];
-        $jadwal = DB::table('jadwalkuliah AS a')
+        $query = DB::table('jadwalkuliah AS a')
             ->select([
                 'e.nama AS hari',
                 DB::raw("CONCAT_WS('-', CONCAT('(', g.kode), CONCAT((SELECT kode 
@@ -97,15 +62,17 @@ class ProccessController extends Controller
             ->leftJoin('dosen AS d', 'b.kode_dosen', '=', 'd.kode')
             ->leftJoin('hari AS e', 'a.kode_hari', '=', 'e.kode')
             ->leftJoin('ruang AS f', 'a.kode_ruang', '=', 'f.kode')
-            ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode')
-            ->where('c.prodi', '=', 'ti')
-            ->orderBy('kdhari')
-            ->orderBy('kdjam')
-            ->orderBy('kelas')
-            ->get();
+            ->leftJoin('jam AS g', 'a.kode_jam', '=', 'g.kode');
+
+        if ($prodi != '') {
+            $query->where('c.prodi', '=', $prodi);
+        }
+
+        $query = $query->orderBy('kdhari')->orderBy('kdjam')->orderBy('kelas');
+
+        $jadwal = $query->get();
 
         $jumlahJadwal = count($jadwal);
-        //dd($jumlahJadwal);
         $jumlah_bentrok = 0;
         $bentrok = array();
         for ($i = 0; $i < $jumlahJadwal; $i++) {
@@ -125,11 +92,11 @@ class ProccessController extends Controller
                 $ruang_b = intval($jadwal[$j]->kdruang);
                 $dosen_b = intval($jadwal[$j]->kddos);
                 $kelas_b = $jadwal[$j]->kelas;
-                //dd($sks);
+
                 if ($i == $j) {
                     continue;
                 }
-                //dd($i, $j, $jam_a, $jam_b, $hari_a, $hari_b, $ruang_a, $ruang_b);
+
                 // cek ruangan
                 if (
                     $jam_a == $jam_b &&
@@ -364,7 +331,6 @@ class ProccessController extends Controller
             ->get();
 
         $jumlahJadwal = count($jadwalrpl);
-        //dd($jumlahJadwal);
         $jumlah_bentrokrpl = 0;
         $bentrok = array();
         for ($i = 0; $i < $jumlahJadwal; $i++) {
@@ -384,11 +350,10 @@ class ProccessController extends Controller
                 $ruang_d = intval($jadwalrpl[$j]->kdruang);
                 $dosen_d = intval($jadwalrpl[$j]->kddos);
                 $kelas_d = $jadwalrpl[$j]->kelas;
-                //dd($sks);
                 if ($i == $j) {
                     continue;
                 }
-                //dd($i, $j, $jam_c, $jam_b, $hari_a, $hari_b, $ruang_a, $ruang_b);
+
                 // cek ruangan
                 if (
                     $jam_c == $jam_d &&
@@ -576,8 +541,6 @@ class ProccessController extends Controller
             }
         }
 
-
-
         $kelasti = DB::table('kelas')
             ->where('jenis_kelas', '=', 'ti')
             ->get();
@@ -639,12 +602,19 @@ class ProccessController extends Controller
             ->orderBy('jam.kode', 'asc')
             ->get();
 
-
-
-// dd($bentrokdata);
-
-
-        return view('schedule.index', ['bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'tidakBentrokrpl' => $tidakBentrokrpl, 'bentrokdatarpl' => $bentrokdatarpl, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
+        return view('schedule.index', [
+            'bentrok' => $bentrok,
+            'tidakBentrok' => $tidakBentrok,
+            'bentrokdata' => $bentrokdata,
+            'tidakBentrokrpl' => $tidakBentrokrpl,
+            'bentrokdatarpl' => $bentrokdatarpl,
+            'jadwal' => $jadwal,
+            'kelasti' => $kelasti,
+            'viewti' => $viewti,
+            'kelasrpl' => $kelasrpl,
+            'viewrpl' => $viewrpl,
+            'prodi' => $prodi
+        ]);
     }
 
     public function updateKodeJam_old(Request $request)
@@ -721,7 +691,6 @@ class ProccessController extends Controller
 
                 $data['msg'] = 'Tidak Ada Data dengan Semester dan Tahun Akademik ini <br>Data yang tampil dibawah adalah data dari proses sebelumnya';
 
-                //redirect(base_url() . 'web/penjadwalan','reload');
             } else {
                 $genetik = new BisnisController(
                     $jenis_semester,
@@ -757,16 +726,10 @@ class ProccessController extends Controller
                     $genetik->StartCrossOver();
 
                     $fitness_akhir[$i] = $fitnessAfterMutation = $genetik->Mutasi();
-                    //dd($fitnessAfterMutation);
-                    ////$fitnessAfterMutation = $genetik->Mutasi();
 
                     for ($j = 0; $j < count($fitnessAfterMutation); $j++) {
 
-                        //dd($fitnessAfterMutation[2]);
                         if ($fitnessAfterMutation[$j] == 1) {
-
-                            //Schedule::truncate();
-
 
                             $jadwal_kuliah = array(array());
 
@@ -774,8 +737,6 @@ class ProccessController extends Controller
                             $fitnessok[$j] = $genetik->GetIndividu($j);
 
                             $fitness = $fitnessok[$j];
-
-
 
                             for ($k = 0; $k < count($jadwal_kuliah); $k++) {
 
@@ -791,14 +752,7 @@ class ProccessController extends Controller
                                     'kode_hari' => $kode_hari,
                                     'kode_ruang' => $kode_ruang,
                                 ]);
-                                //$this->db->query("INSERT INTO jadwalkuliah(kode_pengampu,kode_jam,kode_hari,kode_ruang) ".
-                                //				 "VALUES($kode_pengampu,$kode_jam,$kode_hari,$kode_ruang)");
-
-
                             }
-
-                            //var_dump($jadwal_kuliah);
-                            //exit();
 
                             $found = true;
                         }
@@ -827,11 +781,6 @@ class ProccessController extends Controller
         $data['page_name'] = 'penjadwalan';
         $data['page_title'] = 'Penjadwalan';
 
-        // $jadwal = DB::table('jadwalkuliah')
-        // ->select('jadwalkuliah.*', 'pengampu.kode_dosen', 'pengampu.kelas', 'matakuliah.sks')
-        // ->leftJoin('pengampu', 'jadwalkuliah.kode_pengampu', '=', 'pengampu.kode')
-        // ->leftJoin('matakuliah', 'pengampu.kode_mk', '=', 'matakuliah.kode')
-        // ->get();
         $jadwal = DB::table('jadwalkuliah AS a')
             ->select([
                 'e.nama AS hari',
@@ -882,7 +831,6 @@ class ProccessController extends Controller
             $kelas_a = $jadwal[$i]->kelas;
             $sks = $jadwal[$i]->sks;
             $isBentrok = false;
-            //dd($jadwal[$i], $jadwal[$j]);
 
             for ($j = 0; $j < $jumlahJadwal; $j++) {
                 $jam_b = intval($jadwal[$j]->kdjam);
@@ -890,7 +838,7 @@ class ProccessController extends Controller
                 $ruang_b = intval($jadwal[$j]->kdruang);
                 $dosen_b = intval($jadwal[$j]->kddos);
                 $kelas_b = $jadwal[$j]->kelas;
-                // dd($kelas_b);
+
                 if ($i == $j) {
                     continue;
                 }
@@ -1090,121 +1038,10 @@ class ProccessController extends Controller
             }
         }
 
-        // print_r($bentrok); exit();
-
         $data['bentrok'] = $bentrok;
         $data['tidakBentrok'] = $tidakBentrok;
         $data['bentrokdata'] = $bentrokdata;
 
-        //         $fitness_cek = array();
-        //         $fitness_jadwal = floatval(1/(1+$jumlah_bentrok));
-        //         for($indv = 0; $indv < $jumlah_populasi; $indv++){
-        //             $fitness_cek[$indv] = $fitness_jadwal;
-        //         }
-
-        //         $jumlah = 0;
-        //         $rank = array();
-        //         for ($i = 0; $i < $jumlah_populasi; $i++)
-        //         {
-        //           //proses ranking berdasarkan nilai fitness
-        //             $rank[$i] = 1;
-        //             for ($j = 0; $j < $jumlah_populasi; $j++)
-        //             {
-        //               //ketika nilai fitness jadwal sekarang lebih dari nilai fitness jadwal yang lain,
-        //               //ranking + 1;
-        //               //if (i == j) continue;
-
-        //                 $fitnessA = floatval($fitness_cek[$i]);
-        //                 $fitnessB = floatval($fitness_cek[$j]);
-
-        //                dd($fitnessA, $fitnessB);
-
-        //                 if ( $fitnessA > $fitnessB)
-        //                 {
-        //                     $rank[$i] += 1;
-
-        //                 }
-        //             }
-
-        //             $jumlah += $rank[$i];
-
-        //         }
-        //         $induk = array();
-        //         $jumlah_rank = count($rank);
-        //         for ($i = 0; $i < $jumlah_populasi; $i++)
-        //         {
-        //             $target = mt_rand(0, $jumlah - 1);
-
-        //             $cek    = 0;
-        //             for ($j = 0; $j < $jumlah_rank; $j++) {
-        //                 $cek += $rank[$j];
-        //                 if (intval($cek) >= intval($target)) {
-        //                     $induk[$i] = $j;
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //         $Individu_baru = array(array(array()));
-        //         for($i=0; $i < $jumlah_populasi; $i+2){
-        //             $b=0;
-
-        //             $cr = mt_rand(0, mt_getrandmax() - 1) / mt_getrandmax();
-        //             if (floatval($cr) < floatval($crossOver)) {
-        //                 $a= mt_rand(0, $jumlah_bentrok - 2);
-        //                 // while($a <= $c){
-        //                 //     $a = mt_rand(0, $jumlah_pengampu - 2);
-
-        //                 // }
-        //                 while($b <= $a){
-
-        //                     $b = mt_rand(0, $jumlah_bentrok - 1);
-        //                 }
-
-        //                 //var_dump($this->induk);
-        //                 //var_dump($this->induk);
-        //                 //penentuan jadwal baru dari awal sampai titik pertama
-
-        //                 for ($j = 0; $j < $a; $j++) {
-        //                     for ($k = 0; $k < 4; $k++) {
-        //                         $individu_baru[$i][$j][$k]     = $this->individu[$this->induk[$i]][$j][$k];
-        //                         $individu_baru[$i + 1][$j][$k] = $this->individu[$this->induk[$i + 1]][$j][$k];
-        //                     }
-        //                 }
-        //                 //var_dump($this->induk);
-
-
-        //                 //Penentuan jadwal baru dari titik pertama sampai titik kedua
-        //                 for ($j = $a; $j < $b; $j++) {
-        //                     for ($k = 0; $k < 4; $k++) {
-        //                         $individu_baru[$i][$j][$k]     = $this->individu[$this->induk[$i + 1]][$j][$k];
-        //                         $individu_baru[$i + 1][$j][$k] = $this->individu[$this->induk[$i]][$j][$k];
-        //                     }
-        //                 }
-
-        //                 //penentuan jadwal baru dari titik kedua sampai akhir
-        //                 for ($j = $b; $j < $jumlah_bentrok; $j++) {
-        //                     for ($k = 0; $k < 4; $k++) {
-        //                         $individu_baru[$i][$j][$k]     = $this->individu[$this->induk[$i]][$j][$k];
-        //                         $individu_baru[$i + 1][$j][$k] = $this->individu[$this->induk[$i + 1]][$j][$k];
-        //                     }
-        //                 }
-        //             } else { //Ketika nilai random lebih dari nilai probabilitas pertukaran, maka jadwal baru sama dengan jadwal terpilih
-        //                 for ($j = 0; $j < $jumlah_bentrok; $j++) {
-        //                     for ($k = 0; $k < 4; $k++) {
-        //                         $individu_baru[$i][$j][$k]     = $this->individu[$this->induk[$i]][$j][$k];
-        //                         $individu_baru[$i + 1][$j][$k] = $this->individu[$this->induk[$i + 1]][$j][$k];
-        //                     }
-        //                 }
-        //             }
-        // dd($individu_baru);
-        //         }
-        //dd($fitness_cek);
-        // kalo misal ada kelas / ruangan / dosen bentrok, nilainya di array ini jadi 1 
-        //$rs_jadwal = Schedule::get();
-        //dd($bentrokdata,$tidakBentrok, $bentrok);
-        //dd($sks, $jam_a, $jam_b,$hari_a, $hari_b, $dosen_a, $dosen_b, $kelas_a,$kelas_b, $ruang_a, $ruang_b);
-        //       $cek = count($bentrok[1]);
-        //    dd($cek);
         $data['rs_jadwal'] = Schedule::get();
         $kelasti = DB::table('kelas')
             ->where('jenis_kelas', '=', 'ti')
@@ -1267,15 +1104,8 @@ class ProccessController extends Controller
             ->orderBy('jam.kode', 'asc')
             ->get();
 
-
-
-
-
-
         return view('schedule.index', ['data' => $data, 'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
     }
-
-
 
     function excel_report()
     {
@@ -1355,13 +1185,26 @@ class ProccessController extends Controller
 
     public function updateKodeJam()
     {
-        // dd(request());
         $id = request('id');
         $kodeJam = request('kodeJam');
-        // die($kodeJam);
         $result = Schedule::where('kode_pengampu', $id)->update(['kode_jam' => $kodeJam]);
-        // print_r($result);
-        // die;
-        return response(['success'=> true]);
+        return response(['success' => true]);
+    }
+
+    public function getProdi(Request $request)
+    {
+        $prodi = $request->get('prodi');
+
+        $kelas = DB::table('kelas')
+            ->where('jenis_kelas', '=', $prodi)
+            ->get();
+
+        $cek = array();
+        foreach ($kelas as $value) {
+            $cek[$value->kode] = $value->jenis_kelas;
+        }
+
+
+        return response()->json($cek);
     }
 }

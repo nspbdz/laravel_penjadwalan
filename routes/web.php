@@ -17,20 +17,15 @@ use App\Http\Controllers\LogoutController;
 Route::get('/index', function () {
     return view('index');
 });
-// Route::post('logout', LogoutController::class);
+
 Route::post('/logout', [LogoutController::class, 'perform'])->name('logout');
-
-// Route::post('/logout', 'LogoutController@perform')->name('logout');
-
 
 Route::group(['namespace' => 'App\Http\Controllers'], function () {
     /**
      * Home Routes
      */
     Route::get('/', 'HomeController@index')->name('home.index');
-    // Route::get('/day', 'DayController@index')->name('day.index');
 
-    // Route::group(['middleware' => ['guest']], function () {
     /**
      * Register Routes
      */
@@ -42,18 +37,11 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
      */
     Route::post('/login',  'LoginController@login')->name('login.perform');
     Route::get('/login',  'LoginController@show')->name('login.show');
-    // });
 
     Route::group(['middleware' => ['auth']], function () {
         Route::get('/test', 'TestController@index')->name('test.index');
         Route::get('/test/test', 'TestController@test')->name('test.test');
 
-        /**
-         * Logout Routes
-         */
-        // Route::post('/logout', 'LogoutController@perform')->name('logout');
-
-        // Route::get('/logout', 'LogoutController@perform')->name('logout.perform');
         Route::get('/day/datatable', 'DayController@datas')->name('day.datatable');
         Route::get('/day', 'DayController@index')->name('day.index');
         Route::get('/day/add', 'DayController@add')->name('day.add');
@@ -86,12 +74,6 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
         Route::get('/course/edit/{id}', 'CourseController@edit')->name('course.edit');
         Route::delete('/course/hapus/{id}', 'CourseController@hapus')->name('course.hapus');
 
-        // Route::get('/bisnis', 'BisnisController@inisialisasi')->name('bisnis.index');
-        // Route::get('/bisnis/cekfitness', 'BisnisController@hitungfitness')->name('bisnis.cekfitness');
-        // Route::get('/bisnis/ambildata', 'BisnisController@ambildata')->name('bisnis.ambildata');
-        // Route::get('/bisnis/hitung', 'BisnisController@hitungfitness')->name('bisnis.hitungfitness');
-        // Route::get('/bisnis/crossover', 'BisnisController@startcrossover')->name('bisnis.startcrossover');
-
         Route::get('/proccess', 'ProccessController@penjadwalan')->name('proccess.penjadwalan');
 
         Route::get('/room/datatable', 'RoomController@datas')->name('room.datatable');
@@ -114,7 +96,7 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
 
         Route::get('/schedule/export', 'ScheduleController@export')->name('schedule.export');
         Route::get('/schedule', 'ProccessController@masuk')->name('schedule.index');
-        Route::post('/schedule/test', 'ProccessController@index')->name('schedule.index');
+        Route::post('/schedule/test', 'ProccessController@index')->name('schedule.test');
 
         Route::get('/surat', 'SuratPemberitahuanCOntroller@index')->name('suratPemberitahuan.index');
 
@@ -124,9 +106,6 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
 
         Route::get('/algoritma', 'AlgoritmaGenetikaController@build')->name('algoritma.build');
 
-
-
-        //Route::get('/schedule', 'ScheduleController@index')->name('schedule.index');
         Route::get('/schedule/add', 'ScheduleController@add')->name('schedule.add');
         Route::post('/schedule/store', 'ScheduleController@store')->name('schedule.store');
         Route::post('/schedule/update', 'ScheduleController@update');
@@ -149,7 +128,6 @@ Route::group(['namespace' => 'App\Http\Controllers'], function () {
         Route::get('/wb/edit/{id}', 'WbController@edit')->name('wb.edit');
         Route::delete('/wb/hapus/{id}', 'WbController@hapus')->name('wb.hapus');
         Route::post('/updateKodeJam', 'ProccessController@updateKodeJam')->name('schedule.updateKodeJam');
-        Route::get('/wb/datatables', 'WbController@datas')->name('schedule.getprodi');
-
+        Route::get('/getProdi', 'ProccessController@getProdi')->name('schedule.getprodi');
     });
 });

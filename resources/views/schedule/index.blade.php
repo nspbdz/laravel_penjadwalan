@@ -12,10 +12,8 @@
                 <h3>Data Jadwal Kuliah</h3>
             </div>
             <div class="card-header">
-                <form class="form" method="POST" action="/schedule/test">
+                <form class="form" method="GET" action="/algoritma">
                     {{ csrf_field() }}
-
-
                     <label> Akademik</label>
                     <select id="semester_tipe" name="semester_tipe" class="form-control">
                         <option value="1" <?php echo isset($semester_tipe) ? ($semester_tipe === '1' ? 'selected' : '') : ''; ?> /> GANJIL
@@ -51,34 +49,26 @@
 
                 <select name="prodi" id="prodiDropdown" class="form-control">
                     <option value="">== Pilih Prodi ==</option>
-                    <option value="rpl">Rekayasa Perangkat Lunak</option>
-                    <option value="ti">Teknik Informatika</option>
-
+                    <option value="rpl" @selected('rpl'==$prodi)>Rekayasa Perangkat Lunak</option>
+                    <option value="ti" @selected('ti'==$prodi)>Teknik Informatika</option>
                 </select>
             </div>
             </form>
             <br><br>
-            <div>
-
-
-            </div>
-
-
         </div>
 
         <div id="content_ajax">
 
             <div class="pagination pull-right" id="ajax_paging">
                 <ul>
-                    <?php //echo $this->pagination->create_links();
-                    ?>
+
                 </ul>
             </div>
 
 
 
         </div>
-
+        @if($prodi == '' || $prodi == 'ti')
         <h3>Ini Data Bentrok TI</h3>
         <div class="card-body">
             <div class="table-responsive">
@@ -105,7 +95,7 @@
                         <td>{{ $loop->index + 1 }}</td>
                         <td>{{ $data [0] }}</td>
                         <td>
-                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown"  name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown" name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
                                 <option value="">{{$data[1]}}</option>
                                 <option value="1" {{ $data[1] == '1' ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ $data[1] == '2' ? 'selected' : '' }}>2</option>
@@ -217,7 +207,9 @@
                 </table>
             </div>
         </div>
+        @endif
 
+        @if($prodi == '' || $prodi == 'rpl')
         <h3>Ini Data Bentrok RPL</h3>
         <div class="card-body">
             <div class="table-responsive">
@@ -237,7 +229,6 @@
 
                     </tr>
                     @foreach($bentrokdatarpl as $data)
-
 
                     <tr style="background: yellow;">
                         <td>{{ $loop->index + 1 }}</td>
@@ -333,6 +324,7 @@
                 </table>
             </div>
         </div>
+        @endif
         <div class="card-footer text-right">
             <nav class="d-inline-block">
                 <ul class="pagination mb-0">
@@ -369,7 +361,6 @@
 <script>
     $(document).ready(function() {
         $('.kode-jam-dropdown').on('change', function() {
-            // console.log('test');
             var row = $(this).data('row');
             var id = $(this).data('id');
             var kodeJam = $(this).val();
@@ -393,35 +384,21 @@
                     if (response.success) {
                         // Refresh halaman setelah menerima respons sukses
                         location.reload();
-                        // console.log(response);
                     }
                 }
             });
         });
 
-        $('#prodiDropdown').change(function() {
+        $('#prodiDropdown').on('change', function() {
             var prodi = $(this).val();
 
-            console.log(prodi, 'getProdi')
-            // Kirim permintaan AJAX ke endpoint Laravel untuk mendapatkan data mata kuliah berdasarkan semester
-            $.ajax({
-                url: '{{ route("schedule.getprodi") }}',
-                method: 'GET',
-                data: {
+            var currentUrl = "{{route('schedule.index')}}";
 
-                    prodi: prodi,
+            // Menambahkan query GET yang diinginkan
+            var updatedUrl = currentUrl + '?getprodi=' + prodi;
 
-
-                },
-                success: function(response) {
-                    console.log(response)
-                    $("#prodiDropdown").val(prodi);
-
-
-
-
-                }
-            });
+            // Melakukan refresh halaman dengan URL yang diperbarui
+            window.location.href = updatedUrl;
         });
     });
 </script>

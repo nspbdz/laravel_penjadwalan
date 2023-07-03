@@ -400,6 +400,9 @@ class AlgoritmaGenetikaController extends Controller
         $i = 0;
         foreach ($days as $hari) {
             foreach ($times as $time) {
+                if($hari->kode == 5 && ($time->kode == 5 || $time->kode == 6)){
+                    continue;
+                }
                 $timeslots[] = [
                     'id' => $i,
                     'day' => $hari->nama,

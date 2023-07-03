@@ -26,6 +26,7 @@ class Course extends Model
             ->leftJoin('matakuliah', 'matakuliah.kode', '=', 'pengampu.kode_mk')
             ->where('pengampu.tahun_akademik', '=', $tahunAkademik)
             ->where(DB::raw('matakuliah.semester % 2'), '=', $semesterGanjil)
+            ->orderByRaw('RAND()')
             ->pluck('nama_mata_kuliah')->toArray();
     }
 }

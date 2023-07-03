@@ -134,28 +134,35 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Operasi crossover menggunakan satu titik potong
-    private function crossover($parent1, $parent2)
+    private function crossover($parent1, $parent2, $crossoverRate)
     {
         $child = [];
 
-        // Ambil titik potong acak
-        $cutPoint = rand(1, count($parent1) - 1);
+        // Cek apakah melakukan crossover berdasarkan probabilitas crossover
+        if (mt_rand() / mt_getrandmax() < $crossoverRate) {
+            // Ambil titik potong acak
+            $cutPoint = rand(1, count($parent1) - 1);
 
-        // Ambil gen dari parent1 sebelum titik potong
-        for ($i = 0; $i < $cutPoint; $i++) {
-            $course = array_keys($parent1)[$i];
-            $child[$course] = $parent1[$course];
-        }
+            // Ambil gen dari parent1 sebelum titik potong
+            for ($i = 0; $i < $cutPoint; $i++) {
+                $course = array_keys($parent1)[$i];
+                $child[$course] = $parent1[$course];
+            }
 
-        // Ambil gen dari parent2 setelah titik potong
-        $remainingCourses = array_slice(array_keys($parent2), $cutPoint);
+            // Ambil gen dari parent2 setelah titik potong
+            $remainingCourses = array_slice(array_keys($parent2), $cutPoint);
 
-        foreach ($remainingCourses as $course) {
-            $child[$course] = $parent2[$course];
+            foreach ($remainingCourses as $course) {
+                $child[$course] = $parent2[$course];
+            }
+        } else {
+            // Jika tidak melakukan crossover, anak akan sama dengan salah satu parent secara acak
+            $child = (mt_rand(0, 1) == 0) ? $parent1 : $parent2;
         }
 
         return $child;
     }
+
 
     // Mutasi individu dengan mengganti gen secara acak
     private function mutate($individual, $mutationRate, $timeslots, $rooms, $instructors)
@@ -274,7 +281,7 @@ class AlgoritmaGenetikaController extends Controller
     }
 
     // Menggabungkan langkah-langkah algoritma genetika
-    private function runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors)
+    private function runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors, $crossOverRate)
     {
         $population = $this->initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors);
 
@@ -284,7 +291,7 @@ class AlgoritmaGenetikaController extends Controller
             for ($i = 0; $i < $populationSize; $i++) {
                 $parents = $this->selectParents($population, $tournamentSize);
 
-                $child = $this->crossover($parents[0], $parents[1]);
+                $child = $this->crossover($parents[0], $parents[1], $crossOverRate);
 
                 $child = $this->mutate($child, $mutationRate, $timeslots, $rooms, $instructors);
 
@@ -315,6 +322,7 @@ class AlgoritmaGenetikaController extends Controller
     {
         $populationSize = request('jumlah_populasi');
         $tournamentSize = 5;
+        $crossOverRate = request('probabilitas_crossover');
         $mutationRate = (request('probabilitas_mutasi') * 100); // Persentase mutasi (0-100)
         $maxGenerations = request('jumlah_generasi');
 
@@ -387,7 +395,7 @@ class AlgoritmaGenetikaController extends Controller
 
         // dd($this->wb);
 
-        $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors);
+        $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors, $crossOverRate);
         Schedule::truncate();
         // Tampilkan hasil penjadwalan
         echo "Best Schedule:<br>";
@@ -399,7 +407,6 @@ class AlgoritmaGenetikaController extends Controller
         <td>Dosen</td>
         </tr>";
         foreach ($result as $course => $details) {
-            // dd($details);
             echo "<tr>";
             echo "<td>$course<br>";
             echo "<td>{$details['timeslot']['day']} {$details['timeslot']['time']}</td>";

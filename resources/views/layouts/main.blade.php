@@ -6,6 +6,8 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>Blank Page &mdash; Stisla</title>
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/modules/fontawesome/css/all.min.css') }}">
@@ -161,14 +163,14 @@
     @yield('script');
 
     <script>
-        $(document).ready(function() {
-            $('#isi_surat').summernote({
-                height: '400'
-            });
-            var $surat = $('textarea[name="#isi_surat"]').html($('#isi_surat').code());
-            var textareaValue = $('#isi_surat').code();
+        // $(document).ready(function() {
+        //     $('#isi_surat').summernote({
+        //         height: '400'
+        //     });
+        //     var $surat = $('textarea[name="#isi_surat"]').html($('#isi_surat').code());
+        //     var textareaValue = $('#isi_surat').code();
 
-        });
+        // });
     </script>
 
     @stack('scripts')

@@ -48,21 +48,21 @@
             </div>
             <div class="card-header">
                 <label> Masukan Prodi</label>
-           
-                    <select name="prodi" id="prodiDropdown" class="form-control">
-                        <option value="">== Pilih Prodi ==</option>
-                        <option value="rpl">Rekayasa Perangkat Lunak</option>
-                        <option value="ti">Teknik Informatika</option>
-                       
-                    </select>
+
+                <select name="prodi" id="prodiDropdown" class="form-control">
+                    <option value="">== Pilih Prodi ==</option>
+                    <option value="rpl">Rekayasa Perangkat Lunak</option>
+                    <option value="ti">Teknik Informatika</option>
+
+                </select>
             </div>
             </form>
             <br><br>
             <div>
-             
+
 
             </div>
-           
+
 
         </div>
 
@@ -80,278 +80,259 @@
         </div>
 
         <h3>Ini Data Bentrok TI</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-    <tr>
-<th>No</th> 
-<th>Hari</th>
-<th>Kode jam</th>
-<th>Sesi</th>
-<th>Jam</th>
-<th>Kelas</th>
-<th>matakuliah</th>
-<th>Dosen</th>
-<th>SKS</th>
-<th>Semester</th>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>Kode jam</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
 
-<th>Ruang</th>
+                        <th>Ruang</th>
 
-</tr>
-@foreach($bentrokdata as $data)
-
-
-<tr style="background: yellow;">
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data [0] }}</td>
-<td>
-<select class="form-control" id="kode-jam-dropdown" name="kode-jam-dropdown" data-row="{{ $loop->index }}">
-                            <option value="">{{$data[1]}}</option>
-                            <option value="1" {{ $data[1] == '1' ? 'selected' : '' }}>1</option>
-                            <option value="2" {{ $data[1] == '2' ? 'selected' : '' }}>2</option>
-                            <option value="3" {{ $data[1] == '3' ? 'selected' : '' }}>3</option>
-                            <option value="4" {{ $data[1] == '4' ? 'selected' : '' }}>4</option>
-                            <option value="5" {{ $data[1] == '5' ? 'selected' : '' }}>5</option>
-                            <option value="6" {{ $data[1] == '6' ? 'selected' : '' }}>6</option>
-                            <option value="7" {{ $data[1] == '7' ? 'selected' : '' }}>7</option>
-                            <option value="8" {{ $data[1] == '8' ? 'selected' : '' }}>8</option>
-                            <option value="9" {{ $data[1] == '9' ? 'selected' : '' }}>9</option>
-                            <option value="10" {{ $data[1] == '10' ? 'selected' : '' }}>10</option>
-                            <!-- Tambahkan opsi lain sesuai kebutuhan -->
-                        </select>
-</td>
-<td>{{ $data [2] }}</td>
-<td>{{ $data [3] }}</td>
-<td>{{ $data [8] }}</td>
-<td>{{ $data [4] }}</td>
-<td>{{ $data [5] }}</td>
-<td>{{ $data [6] }}</td>
-<td>{{ $data [7] }}</td>
-
-<td>{{ $data [8] }}</td>
-
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
-
-<script>
-    $(document).ready(function() {
-        $('.kode-jam-dropdown').change(function() {
-            var row = $(this).data('row');
-            var kodeJam = $(this).val();
-            // Kirim permintaan AJAX ke endpoint untuk mengupdate kode jam dalam database
-            $.ajax({
-                url: '{{route("schedule.updateKodeJam")}}', // Ganti dengan URL endpoint Laravel Anda
-                method: 'POST',
-                data: {
-                    row: row,
-                    kodeJam: kodeJam
-                },
-                success: function(response) {
-                    // Lakukan tindakan lain setelah berhasil mengupdate kode jam
-                }
-            });
-        });
-    });
-</script>
-<h3>Ini Data Tidak Bentrok TI</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-<tr>
-<th>No</th> 
-<th>Hari</th>
-<th>Sesi</th>
-<th>Jam</th>
-<th>Kelas</th>
-<th>matakuliah</th>
-<th>Dosen</th>
-<th>SKS</th>
-<th>Semester</th>
-
-<th>Ruang</th>
-
-</tr>
-
-    @foreach($tidakBentrok as $data)
-<tr>
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data [0] }}</td>
-<td>{{ $data [1] }}</td>
-<td>{{ $data [2] }}</td>
-<td>{{ $data [7] }}</td>
-<td>{{ $data [3] }}</td>
-
-<td>{{ $data [4] }}</td>
-<td>{{ $data [5] }}</td>
-<td>{{ $data [6] }}</td>
-
-<td>{{ $data [8] }}</td>
-
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
-<h3>Jadwal Kuliah Prodi TI</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-<tr>
-<th>No</th> 
-<th>Hari</th>
-<th>kode jam</th>
-<th>Sesi</th>
-@foreach($kelasti as $item)
-
-<th>{{$item ->nama}}</th>
-@endforeach
+                    </tr>
+                    @foreach($bentrokdata as $data)
 
 
-</tr>
+                    <tr style="background: yellow;">
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>
+                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown"  name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                                <option value="">{{$data[1]}}</option>
+                                <option value="1" {{ $data[1] == '1' ? 'selected' : '' }}>1</option>
+                                <option value="2" {{ $data[1] == '2' ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ $data[1] == '3' ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ $data[1] == '4' ? 'selected' : '' }}>4</option>
+                                <option value="5" {{ $data[1] == '5' ? 'selected' : '' }}>5</option>
+                                <option value="6" {{ $data[1] == '6' ? 'selected' : '' }}>6</option>
+                                <option value="7" {{ $data[1] == '7' ? 'selected' : '' }}>7</option>
+                                <option value="8" {{ $data[1] == '8' ? 'selected' : '' }}>8</option>
+                                <option value="9" {{ $data[1] == '9' ? 'selected' : '' }}>9</option>
+                                <option value="10" {{ $data[1] == '10' ? 'selected' : '' }}>10</option>
+                                <!-- Tambahkan opsi lain sesuai kebutuhan -->
+                            </select>
+                        </td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [3] }}</td>
+                        <td>{{ $data [8] }}</td>
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+                        <td>{{ $data [7] }}</td>
 
-    @foreach($viewti as $data)
-<tr>
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data->Hari }}</td>
-<td>{{ $data->kode_jam }}</td>
-<td>{{ $data->jam }}</td>
-<td>{{ $data->D3TI1A }}</td>
-<td>{{ $data->D3TI1B }}</td>
+                        <td>{{ $data [8] }}</td>
 
-<td>{{ $data->D3TI1C }}</td>
-<td>{{ $data->D3TI2A }}</td>
-<td>{{ $data->D3TI2B }}</td>
-
-<td>{{ $data->D3TI2C }}</td>
-<td>{{ $data->D3TI3A }}</td>
-<td>{{ $data->D3TI3B }}</td>
-
-<td>{{ $data->D3TI3C }}</td>
-
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
-
-<h3>Ini Data Bentrok RPL</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-    <tr>
-<th>No</th> 
-<th>Hari</th>
-<th>Sesi</th>
-<th>Jam</th>
-<th>Kelas</th>
-<th>matakuliah</th>
-<th>Dosen</th>
-<th>SKS</th>
-<th>Semester</th>
-
-<th>Ruang</th>
-
-</tr>
-@foreach($bentrokdatarpl as $data)
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
 
 
-<tr style="background: yellow;">
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data [0] }}</td>
-<td>{{ $data [1] }}</td>
-<td>{{ $data [2] }}</td>
-<td>{{ $data [7] }}</td>
-<td>{{ $data [3] }}</td>
-<td>{{ $data [4] }}</td>
-<td>{{ $data [5] }}</td>
-<td>{{ $data [6] }}</td>
+        <h3>Ini Data Tidak Bentrok TI</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
 
-<td>{{ $data [8] }}</td>
+                        <th>Ruang</th>
 
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
-<h3>Ini Data Tidak Bentrok RPL</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-<tr>
-<th>No</th> 
-<th>Hari</th>
-<th>Sesi</th>
-<th>Jam</th>
-<th>Kelas</th>
-<th>matakuliah</th>
-<th>Dosen</th>
-<th>SKS</th>
-<th>Semester</th>
+                    </tr>
 
-<th>Ruang</th>
+                    @foreach($tidakBentrok as $data)
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>{{ $data [1] }}</td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
 
-</tr>
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
 
-    @foreach($tidakBentrokrpl as $data)
-<tr>
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data [0] }}</td>
-<td>{{ $data [1] }}</td>
-<td>{{ $data [2] }}</td>
-<td>{{ $data [7] }}</td>
-<td>{{ $data [3] }}</td>
+                        <td>{{ $data [8] }}</td>
 
-<td>{{ $data [4] }}</td>
-<td>{{ $data [5] }}</td>
-<td>{{ $data [6] }}</td>
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Jadwal Kuliah Prodi TI</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>kode jam</th>
+                        <th>Sesi</th>
+                        @foreach($kelasti as $item)
 
-<td>{{ $data [8] }}</td>
-
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
-<h3>Jadwal Kuliah Prodi RPL</h3>
-<div class="card-body">
-  <div class="table-responsive">
-    <table class="table table-bordered table-md">
-<tr>
-<th>No</th> 
-<th>Hari</th>
-<th>kode jam</th>
-<th>Sesi</th>
-@foreach($kelasrpl as $item)
-
-<th>{{$item ->nama}}</th>
-@endforeach
+                        <th>{{$item ->nama}}</th>
+                        @endforeach
 
 
-</tr>
+                    </tr>
 
-    @foreach($viewrpl as $data)
-<tr>
-<td>{{ $loop->index + 1 }}</td>
-<td>{{ $data->Hari }}</td>
-<td>{{ $data->kode_jam }}</td>
-<td>{{ $data->jam }}</td>
-<td>{{ $data->D4RPL1A }}</td>
-<td>{{ $data->D4RPL1B }}</td>
-<td>{{ $data->D4RPL1C }}</td>
-<td>{{ $data->D4RPL2A }}</td>
-<td>{{ $data->D4RPL2B }}</td>
-<td>{{ $data->D4RPL3 }}</td>
-<td>{{ $data->D4RPL4 }}</td>
+                    @foreach($viewti as $data)
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data->Hari }}</td>
+                        <td>{{ $data->kode_jam }}</td>
+                        <td>{{ $data->jam }}</td>
+                        <td>{{ $data->D3TI1A }}</td>
+                        <td>{{ $data->D3TI1B }}</td>
+
+                        <td>{{ $data->D3TI1C }}</td>
+                        <td>{{ $data->D3TI2A }}</td>
+                        <td>{{ $data->D3TI2B }}</td>
+
+                        <td>{{ $data->D3TI2C }}</td>
+                        <td>{{ $data->D3TI3A }}</td>
+                        <td>{{ $data->D3TI3B }}</td>
+
+                        <td>{{ $data->D3TI3C }}</td>
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+
+        <h3>Ini Data Bentrok RPL</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
+
+                        <th>Ruang</th>
+
+                    </tr>
+                    @foreach($bentrokdatarpl as $data)
 
 
-</tr>
-@endforeach
-</table>
-  </div>
-</div>
+                    <tr style="background: yellow;">
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>{{ $data [1] }}</td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+
+                        <td>{{ $data [8] }}</td>
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Ini Data Tidak Bentrok RPL</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
+
+                        <th>Ruang</th>
+
+                    </tr>
+
+                    @foreach($tidakBentrokrpl as $data)
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>{{ $data [1] }}</td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
+
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+
+                        <td>{{ $data [8] }}</td>
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Jadwal Kuliah Prodi RPL</h3>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+                        <th>kode jam</th>
+                        <th>Sesi</th>
+                        @foreach($kelasrpl as $item)
+
+                        <th>{{$item ->nama}}</th>
+                        @endforeach
+
+
+                    </tr>
+
+                    @foreach($viewrpl as $data)
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data->Hari }}</td>
+                        <td>{{ $data->kode_jam }}</td>
+                        <td>{{ $data->jam }}</td>
+                        <td>{{ $data->D4RPL1A }}</td>
+                        <td>{{ $data->D4RPL1B }}</td>
+                        <td>{{ $data->D4RPL1C }}</td>
+                        <td>{{ $data->D4RPL2A }}</td>
+                        <td>{{ $data->D4RPL2B }}</td>
+                        <td>{{ $data->D4RPL3 }}</td>
+                        <td>{{ $data->D4RPL4 }}</td>
+
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
         <div class="card-footer text-right">
             <nav class="d-inline-block">
                 <ul class="pagination mb-0">
@@ -373,34 +354,8 @@
 </div>
 </div>
 <script>
-                    $(document).ready(function() {
-                       
-                        $('#prodiDropdown').change(function() {
-                            var prodi = $(this).val();
-                           
-                             console.log(prodi, 'getProdi')
-                            // Kirim permintaan AJAX ke endpoint Laravel untuk mendapatkan data mata kuliah berdasarkan semester
-                            $.ajax({
-                                url: '{{ route("schedule.getprodi") }}',
-                                method: 'GET',
-                                data: {
-                                   
-                                    prodi : prodi ,
-                                   
 
-                                },
-                                success: function(response) {
-                                    console.log(response)
-                                    $("#prodiDropdown").val(prodi);
-                                   
-               
-                                   
-                                
-                                }
-                            });
-                        });
-                    });
-                </script>
+</script>
 @endauth
 
 @guest
@@ -409,3 +364,65 @@
 @endguest
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('.kode-jam-dropdown').on('change', function() {
+            // console.log('test');
+            var row = $(this).data('row');
+            var id = $(this).data('id');
+            var kodeJam = $(this).val();
+            // Kirim permintaan AJAX ke endpoint untuk mengupdate kode jam dalam database
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                url: '{{route("schedule.updateKodeJam")}}', // Ganti dengan URL endpoint Laravel Anda
+                method: 'POST',
+                data: {
+                    id: id,
+                    row: row,
+                    kodeJam: kodeJam
+                },
+                success: function(response) {
+
+                    // Lakukan tindakan lain setelah berhasil mengupdate kode jam
+                    if (response.success) {
+                        // Refresh halaman setelah menerima respons sukses
+                        location.reload();
+                        // console.log(response);
+                    }
+                }
+            });
+        });
+
+        $('#prodiDropdown').change(function() {
+            var prodi = $(this).val();
+
+            console.log(prodi, 'getProdi')
+            // Kirim permintaan AJAX ke endpoint Laravel untuk mendapatkan data mata kuliah berdasarkan semester
+            $.ajax({
+                url: '{{ route("schedule.getprodi") }}',
+                method: 'GET',
+                data: {
+
+                    prodi: prodi,
+
+
+                },
+                success: function(response) {
+                    console.log(response)
+                    $("#prodiDropdown").val(prodi);
+
+
+
+
+                }
+            });
+        });
+    });
+</script>
+@endpush

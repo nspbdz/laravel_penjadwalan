@@ -88,8 +88,8 @@ class ProccessController extends Controller
                 'f.nama AS ruang',
                 'f.kode as kdruang',
                 'a.kode_jam as kdjam',
-                'd.kode as kddos'
-
+                'd.kode as kddos',
+                'b.kode as pengampuId'
 
             ])
             ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
@@ -298,6 +298,7 @@ class ProccessController extends Controller
                     $sks = $jadwal[$i]->semester,
                     $sks = $jadwal[$i]->kelas,
                     $sks = $jadwal[$i]->ruang,
+                    $pengampuId = $jadwal[$i]->pengampuId,
                 ];
 
                 $bentrokdata[] = $dataBentrok;
@@ -314,6 +315,7 @@ class ProccessController extends Controller
                     $sks = $jadwal[$i]->semester,
                     $sks = $jadwal[$i]->kelas,
                     $sks = $jadwal[$i]->ruang,
+                    $pengampuId = $jadwal[$i]->pengampuId,
                 ];
 
                 $tidakBentrok[] = $dataBentrok;
@@ -639,13 +641,13 @@ class ProccessController extends Controller
 
 
 
-
+// dd($bentrokdata);
 
 
         return view('schedule.index', ['bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'tidakBentrokrpl' => $tidakBentrokrpl, 'bentrokdatarpl' => $bentrokdatarpl, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
     }
 
-    public function updateKodeJam(Request $request)
+    public function updateKodeJam_old(Request $request)
     {
         // Mendapatkan nomor baris dan kode jam dari permintaan AJAX
         $row = $request->input('row');
@@ -1065,6 +1067,7 @@ class ProccessController extends Controller
                     $sks = $jadwal[$i]->semester,
                     $sks = $jadwal[$i]->kelas,
                     $sks = $jadwal[$i]->ruang,
+                    $pengampuId = $jadwal[$i]->pengampuId,
                 ];
 
                 $bentrokdata[] = $dataBentrok;
@@ -1080,6 +1083,7 @@ class ProccessController extends Controller
                     $sks = $jadwal[$i]->semester,
                     $sks = $jadwal[$i]->kelas,
                     $sks = $jadwal[$i]->ruang,
+                    $pengampuId = $jadwal[$i]->pengampuId,
                 ];
 
                 $tidakBentrok[] = $dataBentrok;
@@ -1347,5 +1351,17 @@ class ProccessController extends Controller
 
         $objWriter->save('php://output');
         return view('proccess.index');
+    }
+
+    public function updateKodeJam()
+    {
+        // dd(request());
+        $id = request('id');
+        $kodeJam = request('kodeJam');
+        // die($kodeJam);
+        $result = Schedule::where('kode_pengampu', $id)->update(['kode_jam' => $kodeJam]);
+        // print_r($result);
+        // die;
+        return response(['success'=> true]);
     }
 }

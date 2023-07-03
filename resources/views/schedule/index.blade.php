@@ -384,6 +384,8 @@
                     if (response.success) {
                         // Refresh halaman setelah menerima respons sukses
                         location.reload();
+                    } else {
+                        alert('Data Bentrok');
                     }
                 }
             });

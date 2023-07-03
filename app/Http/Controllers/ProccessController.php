@@ -617,21 +617,6 @@ class ProccessController extends Controller
         ]);
     }
 
-    public function updateKodeJam_old(Request $request)
-    {
-        // Mendapatkan nomor baris dan kode jam dari permintaan AJAX
-        $row = $request->input('row');
-        $kodeJam = $request->input('kodeJam');
-
-        // Lakukan operasi untuk memperbarui kode jam dalam database
-        // Misalnya, jika Anda memiliki model Schedule, Anda dapat menggunakan kode berikut:
-        $schedule = Schedule::find($row + 1); // Nomor baris dimulai dari 0, sementara ID dimulai dari 1
-        $schedule->kode_jam = $kodeJam;
-        $schedule->save();
-
-        // Mengembalikan respons sukses dalam bentuk JSON
-        return response()->json(['success' => true]);
-    }
     public function __construct(
         Lecture $m_dosen,
         Course $m_matakuliah,
@@ -658,10 +643,7 @@ class ProccessController extends Controller
         set_time_limit(120000);
         $data = array();
 
-
-
         //tempat keajaiban dimulai. SEMANGAAAAAATTTTTTT BANZAIIIIIIIIIIIII !
-
 
         if ($request->isMethod('post')) {
             $jenis_semester = request()->post('semester_tipe');
@@ -690,7 +672,6 @@ class ProccessController extends Controller
             if ($rs_data->count() == 0) {
 
                 $data['msg'] = 'Tidak Ada Data dengan Semester dan Tahun Akademik ini <br>Data yang tampil dibawah adalah data dari proses sebelumnya';
-
             } else {
                 $genetik = new BisnisController(
                     $jenis_semester,
@@ -1185,10 +1166,20 @@ class ProccessController extends Controller
 
     public function updateKodeJam()
     {
-        $id = request('id');
+
+        $idPengampu = request('id');
         $kodeJam = request('kodeJam');
-        $result = Schedule::where('kode_pengampu', $id)->update(['kode_jam' => $kodeJam]);
-        return response(['success' => true]);
+        $schedule = (new Schedule)->getScheduleByPengampu($idPengampu);
+
+        $bentrok = (new Schedule())->checkBentrok($idPengampu, $schedule, $kodeJam);
+        if ($bentrok > 0) {
+            return response(['success' => false]);
+        }
+
+        $result = Schedule::where('kode_pengampu', $idPengampu)->update(['kode_jam' => $kodeJam]);
+        if ($result) {
+            return response(['success' => true]);
+        }
     }
 
     public function getProdi(Request $request)

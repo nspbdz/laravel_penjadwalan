@@ -397,33 +397,16 @@ class AlgoritmaGenetikaController extends Controller
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors, $crossOverRate);
         Schedule::truncate();
-        // Tampilkan hasil penjadwalan
-        echo "Best Schedule:<br>";
-        echo "<table>";
-        echo "<tr>
-        <td>Mata Kuliah</td>
-        <td>Waktu</td>
-        <td>Ruang</td>
-        <td>Dosen</td>
-        </tr>";
+        
         foreach ($result as $course => $details) {
-            echo "<tr>";
-            echo "<td>$course<br>";
-            echo "<td>{$details['timeslot']['day']} {$details['timeslot']['time']}</td>";
-            echo "<td>{$details['room']['name']}</td>";
-            echo "<td>{$details['instructor']['name']}</td>";
-            // echo "<td>{$details['fitness']}</td>";
-            echo "</tr>";
             $explode = explode(' - ', $course);
-
             $schedule = new Schedule;
             $schedule->kode_pengampu = $explode[0];
             $schedule->kode_jam = $details['timeslot']['id_time'];
             $schedule->kode_hari = $details['timeslot']['id_day'];
             $schedule->kode_ruang = $details['room']['id'];
-
             $schedule->save();
         }
-        echo "</table>";
+        return redirect()->route('schedule.index');
     }
 }

@@ -316,7 +316,6 @@ class ProccessController extends Controller
                 'a.kode_jam as kdjam',
                 'd.kode as kddos'
 
-
             ])
             ->leftJoin('pengampu AS b', 'a.kode_pengampu', '=', 'b.kode')
             ->leftJoin('matakuliah AS c', 'b.kode_mk', '=', 'c.kode')
@@ -642,6 +641,7 @@ class ProccessController extends Controller
     {
         set_time_limit(120000);
         $data = array();
+        $prodi = request('getprodi') ?? '';
 
         //tempat keajaiban dimulai. SEMANGAAAAAATTTTTTT BANZAIIIIIIIIIIIII !
 
@@ -747,9 +747,9 @@ class ProccessController extends Controller
                         break;
                     }
                 }
-                echo "<pre>";
-                print_r($fitness_akhir);
-                exit(); //buat liat fitness setelah mutasi
+                // echo "<pre>";
+                // print_r($fitness_akhir);
+                // exit(); //buat liat fitness setelah mutasi
                 if (!$found) {
                     $data['msg'] = 'Tidak Ditemukan Solusi Optimal';
                 }
@@ -785,7 +785,8 @@ class ProccessController extends Controller
                 'f.nama AS ruang',
                 'f.kode as kdruang',
                 'a.kode_jam as kdjam',
-                'd.kode as kddos'
+                'd.kode as kddos',
+                'b.kode as pengampuId' 
 
 
             ])
@@ -1050,7 +1051,7 @@ class ProccessController extends Controller
                 DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI3C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI3C"),
             )
 
-            ->groupBy('hari.nama', 'jam.kode', 'jam.range_jam')
+            ->groupBy('hari.nama', 'jam.kode', 'hari.kode', 'jam.range_jam')
             ->where('kelas.jenis_kelas', '=', 'ti')
             ->orderBy('hari.kode', 'asc')
             ->orderBy('jam.kode', 'asc')
@@ -1079,13 +1080,24 @@ class ProccessController extends Controller
                 DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3RPL4' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3RPL4"),
             )
 
-            ->groupBy('hari.nama', 'jam.kode', 'jam.range_jam')
+            ->groupBy('hari.nama', 'jam.kode', 'hari.kode', 'jam.range_jam')
             ->where('kelas.jenis_kelas', '=', 'rpl')
             ->orderBy('hari.kode', 'asc')
             ->orderBy('jam.kode', 'asc')
             ->get();
 
-        return view('schedule.index', ['data' => $data, 'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl]);
+        return view('schedule.index', [
+            'data' => $data,
+            'bentrok' => $bentrok,
+            'tidakBentrok' => $tidakBentrok,
+            'bentrokdata' => $bentrokdata,
+            'jadwal' => $jadwal,
+            'kelasti' => $kelasti,
+            'viewti' => $viewti,
+            'kelasrpl' => $kelasrpl,
+            'viewrpl' => $viewrpl,
+            'prodi' => $prodi
+        ]);
     }
 
     function excel_report()

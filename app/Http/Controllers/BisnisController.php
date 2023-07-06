@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Room;
 use App\Models\Hour;
 use App\Models\Day;
-use DB;
 use App\Models\Wb;
+use Illuminate\Support\Facades\DB;
 
 class BisnisController extends Controller
 {
@@ -50,7 +50,7 @@ class BisnisController extends Controller
         $this->crossOver      = $crossOver;
         $this->mutasi         = $mutasi;
         $this->kode_jumat     = intval($kode_jumat);
-        $this->range_jumat    = explode('-', $range_jumat); //$hari_jam = explode(':', $this->waktu_dosen[$j][1]);
+        $this->range_jumat    = explode('-', $range_jumat);
         $this->kode_dhuhur    = intval($kode_dhuhur);
     }
 
@@ -71,8 +71,6 @@ class BisnisController extends Controller
             $this->jenis_mk[$i]    = $data->jenis;
             $i++;
         }
-
-
 
         //Fill Array of Jam Variables
         $rs_jam = Hour::select('kode')->get();
@@ -631,6 +629,14 @@ class BisnisController extends Controller
             if ($r < $this->mutasi) {
                 //Penentuan pada matakuliah dan kelas yang mana yang akan dirandomkan atau diganti
                 $krom = mt_rand(0, $jumlah_pengampu - 1);
+
+                if (isset($this->wb[$krom])) {
+                    $this->individu[$i][$krom][0] = $krom;
+                    $this->individu[$i][$krom][1] = $this->wb[$this->pengampu]['time'] - 1;
+                    $this->individu[$i][$krom][2] = $this->wb[$this->pengampu]['day'] - 1;
+                    $this->individu[$i][$krom][3] = $this->wb[$this->pengampu]['ruang'] - 1;
+                    continue;
+                }
 
                 $j = intval($this->sks[$krom]);
 

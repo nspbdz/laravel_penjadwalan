@@ -747,9 +747,9 @@ class ProccessController extends Controller
                         break;
                     }
                 }
-                // echo "<pre>";
-                // print_r($fitness_akhir);
-                // exit(); //buat liat fitness setelah mutasi
+                echo "<pre>";
+                print_r($fitness_akhir);
+                exit(); //buat liat fitness setelah mutasi
                 if (!$found) {
                     $data['msg'] = 'Tidak Ditemukan Solusi Optimal';
                 }

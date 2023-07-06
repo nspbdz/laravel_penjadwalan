@@ -2,19 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Lecture;
 use App\Models\Room;
-use App\Models\Support;
 use App\Models\Hour;
 use App\Models\Day;
-use App\Models\Schedule;
-use App\Models\User;
-use App\Models\Wtb;
-use App\Models\Course;
 use DB;
-use Illuminate\Support\Arr;
-use App\Http\Controllers\ProccessController;
+use App\Models\Wb;
 
 class BisnisController extends Controller
 {
@@ -43,39 +35,15 @@ class BisnisController extends Controller
     private $ruangReguler = array();
     private $ruangProyek = array();
     private $ruangBahasa = array();
-    private $logAmbilData;
-    private $logInisialisasi;
-    private $log;
     private $induk = array();
     //jumat
     private $kode_jumat;
     private $range_jumat = array();
     private $kode_dhuhur;
-    private $is_waktu_dosen_tidak_bersedia_empty;
-    private $processController;
+    private $wb;
 
-
-
-
-    // function __construct(Request $request)
-    // {
-    //     // parent::__construct();
-
-    //     $this->jenis_semester = $request->input('jenis_semester');
-    //     $this->tahun_akademik = $request->input('tahun_akademik');
-    //     $this->populasi = intval($request->input('populasi'));
-    //     $this->crossOver = $request->input('crossOver');
-    //     $this->mutasi = $request->input('mutasi');
-    //     $this->kode_jumat = intval($request->input('kode_jumat'));
-    //     $this->range_jumat = explode('-', $request->input('range_jumat'));
-    //     $this->kode_dhuhur = intval($request->input('kode_dhuhur'));
-    // }
     function __construct($jenis_semester, $tahun_akademik, $populasi, $crossOver, $mutasi, $kode_jumat, $range_jumat, $kode_dhuhur)
     {
-
-
-
-
         $this->jenis_semester = $jenis_semester;
         $this->tahun_akademik = $tahun_akademik;
         $this->populasi       = intval($populasi);
@@ -88,32 +56,9 @@ class BisnisController extends Controller
 
     public function ambildata()
     {
-        // $jenis_semester = request()->post('semester_tipe');
-        // $tahun_akademik = request()->post('tahun_akademik');
-        // $jumlah_populasi = request()->post('jumlah_populasi');
-        // $crossOver = request()->post('probabilitas_crossover');
-        // $mutasi = request()->post('probabilitas_mutasi');
-        // $jumlah_generasi = request()->post('jumlah_generasi');
-
-
-        // $this->jenis_semester = $jenis_semester;
-        // $this->tahun_akademik = $tahun_akademik;
-        // $this->populasi       = intval($populasi);
-        // $this->crossOver      = $crossOver;
-        // $this->mutasi         = $mutasi;
-        // $this->kode_jumat     = intval($kode_jumat);
-        // $this->range_jumat    = explode('-',$range_jumat);//$hari_jam = explode(':', $this->waktu_dosen[$j][1]);
-        // $this->kode_dhuhur    = intval($kode_dhuhur);
-        // // $this->processController = $processController;
-
-
         $rs_data = DB::table('pengampu AS a')
             ->select('a.kode', 'b.sks', 'a.kode_dosen', 'b.jenis', 'b.semester', 'a.tahun_akademik')
             ->leftJoin('matakuliah AS b', 'a.kode_mk', '=', 'b.kode')
-            // ->whereRaw('b.semester % 2', '=', $this->jenis_semester)
-            // ->where('a.tahun_akademik', '=', $this->tahun_akademik)
-            // ->whereRaw('b.semester % 2', '=', '1')
-            // ->where('a.tahun_akademik', '=', '2018-2019')
             ->whereRaw('b.semester % 2 = ?', [$this->jenis_semester])
             ->where('a.tahun_akademik', '=', $this->tahun_akademik)
             ->get();
@@ -136,7 +81,6 @@ class BisnisController extends Controller
             $this->jam[$i] = intval($data->kode);
             $i++;
         }
-        // dd($this->jam);
 
         //Fill Array of Hari Variables
         $rs_hari = Day::select('kode')->get();
@@ -145,11 +89,10 @@ class BisnisController extends Controller
             $this->hari[$i] = intval($data->kode);
             $i++;
         }
-        // dd($this->hari);
 
         //ruang teori
         $rs_RuangTeori = Room::select('kode')->where('jenis', '=', $this->TEORI)->get();
-        // dd($rs_RuangTeori);
+
         $i = 0;
         foreach ($rs_RuangTeori as $data) {
             $this->ruangReguler[$i] = intval($data->kode);
@@ -163,8 +106,6 @@ class BisnisController extends Controller
             $this->ruangLaboratorium[$i] = intval($data->kode);
             $i++;
         }
-        // dd($this->ruangLaboratorium);
-
 
         //ruang proyek /TA
         $rs_Ruangproyek = Room::select('kode')->where('jenis', '=', $this->PROYEK)->get();
@@ -173,8 +114,6 @@ class BisnisController extends Controller
             $this->ruangProyek[$i] = intval($data->kode);
             $i++;
         }
-        // dd($this->ruangProyek);
-
 
         //ruang Bahasa Inggris
         $rs_Ruangbahasa = Room::select('kode')->where('jenis', '=', $this->BAHASA)->get();
@@ -183,13 +122,11 @@ class BisnisController extends Controller
             $this->ruangBahasa[$i] = intval($data->kode);
             $i++;
         }
-        // dd($this->ruangBahasa);
+
         $rs_WaktuDosen = DB::table('waktu_tidak_bersedia')
             ->select('kode_dosen', DB::raw("CONCAT_WS(':', kode_hari, kode_jam) AS kode_hari_jam"))
             ->get();
-        // dd($rs_WaktuDosen);
-        // $rs_WaktuDosen = WTB::select('kode_dosen',CONCAT_WS(':',kode_hari,kode_jam) as kode_hari_jam)->get();
-        // $rs_WaktuDosen = $this->db->query("SELECT kode_dosen, CONCAT_WS(':',kode_hari,kode_jam) as kode_hari_jam FROM waktu_tidak_bersedia");
+
         $i             = 0;
         foreach ($rs_WaktuDosen as $data) {
             $this->idosen[$i]         = intval($data->kode_dosen);
@@ -201,7 +138,6 @@ class BisnisController extends Controller
 
     public function inisialisasi()
     {
-
         $jumlah_pengampu = count($this->pengampu);
         $jumlah_jam = count($this->jam);
         $jumlah_hari = count($this->hari);
@@ -210,12 +146,20 @@ class BisnisController extends Controller
         $jumlah_ruang_proyek = count($this->ruangProyek);
         $jumlah_ruang_bahasa = count($this->ruangBahasa);
         $this->populasi = 10;
-        //dd($this->jam);
+
         for ($i = 0; $i < $this->populasi; $i++) {
 
             for ($j = 0; $j < $jumlah_pengampu; $j++) {
 
                 $sks = $this->sks[$j];
+
+                if (isset($this->wb[$this->pengampu[$i]])) {
+                    $this->individu[$i][$j][0] = $j;
+                    $this->individu[$i][$j][1] = $this->wb[$this->pengampu]['time'] - 1;
+                    $this->individu[$i][$j][2] = $this->wb[$this->pengampu]['day'] - 1;
+                    $this->individu[$i][$j][3] = $this->wb[$this->pengampu]['ruang'] - 1;
+                    continue;
+                }
 
                 $this->individu[$i][$j][0] = $j;
 
@@ -246,9 +190,6 @@ class BisnisController extends Controller
 
                 $this->individu[$i][$j][2] = mt_rand(0, $jumlah_hari - 1); // Penentuan hari secara acak
 
-
-
-
                 if ($this->jenis_mk[$j] === $this->TEORI) {
                     $this->individu[$i][$j][3] = intval($this->ruangReguler[mt_rand(0, $jumlah_ruang_reguler - 1)]);
                 } elseif ($this->jenis_mk[$j] === $this->PRAKTIKUM) {
@@ -262,122 +203,15 @@ class BisnisController extends Controller
         }
     }
 
-    // public function inisialiasi()
-    // {
-    //     // dd(config('config.jenis_semester'));
-
-    //     $distinctCourse = Course::select('semester')
-    //         ->distinct()
-    //         ->get()->toArray();
-
-
-
-    //     $jam = [];
-    //     $rs_jam = Hour::select('kode')->get();
-    //     foreach ($rs_jam as $data) {
-    //         $jam[] = intval($data->kode);
-    //     }
-
-    //     $lab = [];
-    //     $rs_lab = Room::select('kode')
-    //         ->where('jenis', '=', 'LABORATORIUM')
-    //         ->get();
-    //     foreach ($rs_lab as $data) {
-    //         $lab[] = intval($data->kode);
-    //     }
-
-    //     $teori = [];
-    //     $rs_teori = Room::select('kode')
-    //         ->where('jenis', '=', 'TEORI')
-    //         ->get();
-    //     foreach ($rs_teori as $data) {
-    //         $teori[] = intval($data->kode);
-    //     }
-    //     $proyek = [];
-    //     $rs_proyek = Room::select('kode')
-    //         ->where('jenis', '=', 'PROYEK')
-    //         ->get();
-    //     foreach ($rs_proyek as $data) {
-    //         $proyek[] = intval($data->kode);
-    //     }
-    //     $bahasa = [];
-    //     $rs_bahasa = Room::select('kode')
-    //         ->where('jenis', '=', 'BAHASA')
-    //         ->get();
-    //     foreach ($rs_bahasa as $data) {
-    //         $bahasa[] = intval($data->kode);
-    //     }
-
-    //     // dd($teori);
-
-    //     // dd(count($jam));
-
-    //     $jumlah_jam = count($jam);
-    //     $populasi = 1;
-    //     $pengampu = Support::get();
-    //     $hour = Hour::get();
-    //     $day = Day::get();
-    //     $ruangan = Room::distinct();
-    //     $wtb = WTB::get();
-
-
-    //     $countRuangTeori = DB::table('ruang')
-    //         ->where('jenis', '=', "TEORI")
-    //         ->count();
-
-    //     $countRuangLab = DB::table('ruang')
-    //         ->where('jenis', '=', "LABORATORIUM")
-    //         ->count();
-
-    //     $CountruangProyek = DB::table('ruang')
-    //         ->where('jenis', '=', "PROYEK")
-    //         ->count();
-    //     $CountruangBahasa = DB::table('ruang')
-    //         ->where('jenis', '=', "BAHASA")
-    //         ->count();
-
-
-
-    //     // dd(count($jumlah_pengampu));
-    //     // $sks1 = array();
-
-    //     $maxJam = array();
-    //     $ruangReguler = array();
-
-    //     $rs_RuangReguler = Room::select('kode')->where('jenis', '=', "TEORI")->get();
-    //     $i = 0;
-    //     foreach ($rs_RuangReguler as $data) {
-    //         $ruangReguler[$i] = intval($data->kode);
-    //         $i++;
-    //     }
-    //     // dd($ruangReguler);
-
-    //     for ($i = 0; $i < 1; $i++) {
-    //         for ($j = 0; $j < 50; $j++) {
-    //             // for ($j = 0; $j < count($pengampu); $j++) {
-    //             // $sks = 5;
-    //             $sks = $this->sks[$j];
-
-    //             $individu[$i][$j][0] = $j;
-
-    //             if ($jenis_mk[$j] == "TEORI") {
-    //                 $individu[$i][$j][3] = intval($teori[mt_rand(0, $countRuangTeori - 1)]);
-    //             } elseif ($jenis_mk[$j] === "LABORATORIUM") {
-    //                 $individu[$i][$j][3] = intval($lab[mt_rand(0, $countRuangLab - 1)]);
-    //             } elseif ($jenis_mk[$j] === "PROYEK") {
-    //                 $individu[$i][$j][3] = intval($proyek[mt_rand(0, $CountruangProyek - 1)]);
-    //             } elseif ($jenis_mk[$j] === "BAHASA") {
-    //                 $individu[$i][$j][3] = intval($bahasa[mt_rand(0, $CountruangBahasa - 1)]);
-    //             }
-    //         }
-    //     }
-
-    //     dd($individu);
-
-    //     return view('bisnis.index', ['individu' => $individu]);
-    // }
-
-
+    public function setWb()
+    {
+        $resultWb = Wb::all();
+        foreach ($resultWb as $row) {
+            $this->wb[$row->kode_pengampu]['day'] = $row->kode_hari;
+            $this->wb[$row->kode_pengampu]['time'] = $row->kode_jam;
+            $this->wb[$row->kode_pengampu]['ruang'] = $row->kode_ruang;
+        }
+    }
 
     private function cekfitness($indv)
     {
@@ -388,9 +222,6 @@ class BisnisController extends Controller
         $jumat_1 = intval($this->range_jumat[1]);
         $jumat_2 = intval($this->range_jumat[2]);
 
-        //var_dump($this->range_jumat);
-        //exit();
-
         $jumlah_pengampu = count($this->pengampu);
 
         for ($i = 0; $i < $jumlah_pengampu; $i++) {
@@ -398,7 +229,6 @@ class BisnisController extends Controller
             $sks = intval($this->sks[$i]);
 
             $jam_a = intval($this->individu[$indv][$i][1]);
-            //dd($jam_a);
             $hari_a = intval($this->individu[$indv][$i][2]);
             $ruang_a = intval($this->individu[$indv][$i][3]);
             $dosen_a = intval($this->dosen[$i]);
@@ -611,9 +441,6 @@ class BisnisController extends Controller
             }
             //#endregion
 
-            // dd($this->waktu_dosen);
-            // dd($hari_jam);
-
 
             //#region Bentrok dengan Waktu Keinginan Dosen
             //Boolean penaltyForKeinginanDosen = false;
@@ -624,7 +451,7 @@ class BisnisController extends Controller
                 if ($dosen_a == $this->idosen[$j]) {
                     $hari_jam = array();
                     $hari_jam = explode(':', $this->waktu_dosen[$j][1]);
-                    //dd( $jumlah_waktu_tidak_bersedia);
+
                     if (isset($hari_jam[1])) {
                         if (
                             $this->jam[$jam_a] == $hari_jam[1] &&
@@ -635,7 +462,6 @@ class BisnisController extends Controller
                     }
                 }
             }
-            //dd($hari_jam);
 
 
 
@@ -672,8 +498,7 @@ class BisnisController extends Controller
         for ($indv = 0; $indv < $this->populasi; $indv++) {
             $fitness[$indv] = $this->CekFitness($indv);
         }
-        // dd($fitness[$indv]);
-        // dd($indv);
+
         return $fitness;
     }
     public function Seleksi($fitness)
@@ -717,8 +542,6 @@ class BisnisController extends Controller
                 }
             }
         }
-        //echo "<pre>";
-        //print_r($fitness);   exit();
     }
 
     //#endregion
@@ -853,7 +676,6 @@ class BisnisController extends Controller
 
     public function GetIndividu($indv)
     {
-        //return individu;
 
         //int[,] individu_solusi = new int[mata_kuliah.Length, 4];
         $individu_solusi = array(array());
@@ -876,13 +698,6 @@ class BisnisController extends Controller
     //     // $sks=$this->sks;
     //     // dd($sks);
 
-    //     $indv = array();
-    //     $penalty = 0;
-    //     $pengampu = Support::get();
-    //     $jumlah_pengampu = count($pengampu);
-    //     $sks = array();
-    //     $individu = array();
-    //     $jam_a = array();
 
     //     // dd($jumlah_pengampu);
 

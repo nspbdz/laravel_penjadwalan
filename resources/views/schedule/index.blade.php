@@ -118,7 +118,7 @@
                         <td>{{ $data [6] }}</td>
                         <td>{{ $data [7] }}</td>
 
-                        <td>{{ $data [8] }}</td>
+                        <td>{{ $data [9] }}</td>
 
                     </tr>
                     @endforeach
@@ -159,7 +159,7 @@
                         <td>{{ $data [5] }}</td>
                         <td>{{ $data [6] }}</td>
 
-                        <td>{{ $data [8] }}</td>
+                        <td>{{ $data [9] }}</td>
 
                     </tr>
                     @endforeach

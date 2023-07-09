@@ -150,12 +150,17 @@ class BisnisController extends Controller
             for ($j = 0; $j < $jumlah_pengampu; $j++) {
 
                 $sks = $this->sks[$j];
-
-                if (isset($this->wb[$this->pengampu[$i]])) {
+                // dd($this->pengampu);
+                // dd($this->wb);
+                // dd($this->pengampu[$i]);
+                // echo $this->pengampu[$i];
+                // dd($this->wb[$this->pengampu[$i]]);
+                if (isset($this->wb[$this->pengampu[$j]])) {
+                    // dd($this->pengampu[$j]);
                     $this->individu[$i][$j][0] = $j;
-                    $this->individu[$i][$j][1] = $this->wb[$this->pengampu]['time'] - 1;
-                    $this->individu[$i][$j][2] = $this->wb[$this->pengampu]['day'] - 1;
-                    $this->individu[$i][$j][3] = $this->wb[$this->pengampu]['ruang'] - 1;
+                    $this->individu[$i][$j][1] = ($this->wb[$this->pengampu[$j]]['time'] - 1);
+                    $this->individu[$i][$j][2] = ($this->wb[$this->pengampu[$j]]['day'] - 1);
+                    $this->individu[$i][$j][3] = ($this->wb[$this->pengampu[$j]]['ruang'] - 1);
                     continue;
                 }
 
@@ -199,6 +204,8 @@ class BisnisController extends Controller
                 }
             }
         }
+
+        // dd();
     }
 
     public function setWb()
@@ -626,19 +633,26 @@ class BisnisController extends Controller
             //Ketika nilai random kurang dari nilai probalitas Mutasi,
             //maka terjadi penggantian komponen
 
+            $krom = mt_rand(0, $jumlah_pengampu - 1);
+            if (isset($this->wb[$this->pengampu[$krom]])) {
+                // dd($this->wb[$this->pengampu[$krom]]);
+                $this->individu[$i][$krom][0] = $krom;
+                $this->individu[$i][$krom][1] = $this->wb[$this->pengampu[$krom]]['time'];
+                $this->individu[$i][$krom][2] = $this->wb[$this->pengampu[$krom]]['day'];
+                $this->individu[$i][$krom][3] = $this->wb[$this->pengampu[$krom]]['ruang'];
+                $fitness[$i] = $this->CekFitness($i);
+                continue;
+            }
+
+            
+
             if ($r < $this->mutasi) {
                 //Penentuan pada matakuliah dan kelas yang mana yang akan dirandomkan atau diganti
-                $krom = mt_rand(0, $jumlah_pengampu - 1);
 
-                if (isset($this->wb[$krom])) {
-                    $this->individu[$i][$krom][0] = $krom;
-                    $this->individu[$i][$krom][1] = $this->wb[$this->pengampu]['time'] - 1;
-                    $this->individu[$i][$krom][2] = $this->wb[$this->pengampu]['day'] - 1;
-                    $this->individu[$i][$krom][3] = $this->wb[$this->pengampu]['ruang'] - 1;
-                    continue;
-                }
-
+                
                 $j = intval($this->sks[$krom]);
+
+                
 
                 switch ($j) {
                     case 1:

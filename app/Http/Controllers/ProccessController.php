@@ -660,8 +660,6 @@ class ProccessController extends Controller
             $data['probabilitas_mutasi'] = $mutasi;
             $data['jumlah_generasi'] = $jumlah_generasi;
 
-
-
             $rs_data = DB::table('pengampu AS a')
                 ->select('a.kode', 'b.sks', 'a.kode_dosen', 'b.jenis', 'a.kelas')
                 ->leftJoin('matakuliah AS b', 'a.kode_mk', '=', 'b.kode')
@@ -670,7 +668,6 @@ class ProccessController extends Controller
                 ->get();
 
             if ($rs_data->count() == 0) {
-
                 $data['msg'] = 'Tidak Ada Data dengan Semester dan Tahun Akademik ini <br>Data yang tampil dibawah adalah data dari proses sebelumnya';
             } else {
                 $genetik = new BisnisController(
@@ -693,6 +690,7 @@ class ProccessController extends Controller
                     6
                 ); //kode jam dhuhur
                 $genetik->ambildata();
+                $genetik->setWb();
                 $genetik->inisialisasi();
 
                 $found = false;
@@ -708,8 +706,14 @@ class ProccessController extends Controller
 
                     $fitness_akhir[$i] = $fitnessAfterMutation = $genetik->Mutasi();
 
-                    for ($j = 0; $j < count($fitnessAfterMutation); $j++) {
+                    Schedule::truncate();
 
+                    // dd($fitness_akhir);
+
+                    for ($j = 0; $j < count($fitnessAfterMutation); $j++) {
+                        if (!isset($fitnessAfterMutation[$j])) {
+                            dd($fitnessAfterMutation);
+                        }
                         if ($fitnessAfterMutation[$j] == 1) {
 
                             $jadwal_kuliah = array(array());
@@ -747,9 +751,9 @@ class ProccessController extends Controller
                         break;
                     }
                 }
-                echo "<pre>";
-                print_r($fitness_akhir);
-                exit(); //buat liat fitness setelah mutasi
+                // echo "<pre>";
+                // print_r($fitness_akhir);
+                // exit(); //buat liat fitness setelah mutasi
                 if (!$found) {
                     $data['msg'] = 'Tidak Ditemukan Solusi Optimal';
                 }
@@ -786,7 +790,7 @@ class ProccessController extends Controller
                 'f.kode as kdruang',
                 'a.kode_jam as kdjam',
                 'd.kode as kddos',
-                'b.kode as pengampuId' 
+                'b.kode as pengampuId'
 
 
             ])
@@ -803,6 +807,8 @@ class ProccessController extends Controller
 
         $jumlahJadwal = count($jadwal);
         $bentrok = array();
+        $tidakBentrok = [];
+        $bentrokdata = [];
         $jumlah_bentrok = 0;
         for ($i = 0; $i < $jumlahJadwal; $i++) {
             $bentrok[$i] = 0;
@@ -989,6 +995,7 @@ class ProccessController extends Controller
             if ($bentrok[$i] == 1) {
                 $dataBentrok = [
                     $jam_a = $jadwal[$i]->hari,
+                    $kdjam = $jadwal[$i]->kdjam,
                     $hari_a = $jadwal[$i]->sesi,
                     $ruang_a = $jadwal[$i]->jam_kuliah,
                     $dosen_a = $jadwal[$i]->nama_mk,
@@ -1005,20 +1012,26 @@ class ProccessController extends Controller
             if ($bentrok[$i] == 0) {
                 $dataBentrok = [
                     $jam_a = $jadwal[$i]->hari,
+                    $kdjam = $jadwal[$i]->kdjam,
                     $hari_a = $jadwal[$i]->sesi,
                     $ruang_a = $jadwal[$i]->jam_kuliah,
                     $dosen_a = $jadwal[$i]->nama_mk,
                     $kelas_a = $jadwal[$i]->dosen,
                     $sks = $jadwal[$i]->sks,
-                    $sks = $jadwal[$i]->semester,
-                    $sks = $jadwal[$i]->kelas,
-                    $sks = $jadwal[$i]->ruang,
+                    $semester = $jadwal[$i]->semester,
+                    $kelas = $jadwal[$i]->kelas,
+                    $ruang = $jadwal[$i]->ruang,
                     $pengampuId = $jadwal[$i]->pengampuId,
                 ];
 
                 $tidakBentrok[] = $dataBentrok;
             }
         }
+
+        // dd($jadwal);
+
+        $bentrokdatarpl = [];
+        $tidakBentrokrpl = [];
 
         $data['bentrok'] = $bentrok;
         $data['tidakBentrok'] = $tidakBentrok;
@@ -1091,6 +1104,8 @@ class ProccessController extends Controller
             'bentrok' => $bentrok,
             'tidakBentrok' => $tidakBentrok,
             'bentrokdata' => $bentrokdata,
+            'tidakBentrokrpl' => $tidakBentrokrpl,
+            'bentrokdatarpl' => $bentrokdatarpl,
             'jadwal' => $jadwal,
             'kelasti' => $kelasti,
             'viewti' => $viewti,

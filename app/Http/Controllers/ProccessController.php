@@ -268,7 +268,7 @@ class ProccessController extends Controller
                     $pengampuId = $jadwal[$i]->pengampuId,
                 ];
                 $where = ['kode_jam' => ($kdjam + 1)];
-                $this->updateData($pengampuId, $where);
+                // $this->updateData($pengampuId, $where);
 
                 $bentrokdata[] = $dataBentrok;
             }

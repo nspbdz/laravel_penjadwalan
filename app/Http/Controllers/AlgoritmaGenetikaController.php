@@ -45,6 +45,23 @@ class AlgoritmaGenetikaController extends Controller
                 }
 
                 $instructor = $this->checkDosen($dosenId, $instructors);
+                $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class);
+                while ($conflict) {
+                    if (!empty($this->wb[$courseId])) {
+                        $day = $this->wb[$courseId]['day'];
+                        $time = $this->wb[$courseId]['time'];
+                        $ruang = $this->wb[$courseId]['ruang'];
+                        $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                        $randomRoom = $this->getRuangan($rooms, $ruang);
+                    } elseif (!empty($this->wtb[$dosenId])) {
+                        $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                        $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                    } else {
+                        $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                        $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                    }
+                    $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class);
+                }
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
@@ -59,6 +76,30 @@ class AlgoritmaGenetikaController extends Controller
         }
 
         return $population;
+    }
+
+    private function isConflict($schedule, $timeslots, $rooms, $instructor, $class)
+    {
+        foreach ($schedule as $data) {
+            // if (
+            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['room']['id'] == $rooms['id']) ||
+            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['instructor']['id'] == $instructor['id']) ||
+            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['class']['id'] == $class)
+            // ) {
+            //     return true;
+            // }
+
+            for ($i = 0; $i < $data['sks']; $i++) {
+                if (
+                    (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['room']['id'] == $rooms['id']) ||
+                    (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['instructor']['id'] == $instructor['id']) ||
+                    (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['class']['id'] == $class)
+                ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // Evaluasi fitness
@@ -211,7 +252,7 @@ class AlgoritmaGenetikaController extends Controller
                             $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                         }
                         $instructor = $this->checkDosen($dosenId, $instructors);
-    
+
                         $individual[$course]['timeslot'] = $randomTimeslot;
                         $individual[$course]['room'] = $randomRoom;
                         $individual[$course]['instructor'] = $instructor;
@@ -224,16 +265,13 @@ class AlgoritmaGenetikaController extends Controller
                         // unset($timeslots[explode('-', $timeslotRoom)[0]]);
                         // unset($timeslots[explode('-', $timeslotInstructor)[0]]);
                         // unset($timeslots[explode('-', $timeslotClass)[0]]);
-    
+
                         // unset($rooms[explode('-', $timeslotRoom)[1]]);
-    
+
                         $individual[$course] = $details;
                         // dd($individual);
                     }
                 }
-
-
-                
             }
         }
 
@@ -451,6 +489,6 @@ class AlgoritmaGenetikaController extends Controller
             $schedule->kode_ruang = $details['room']['id'];
             $schedule->save();
         }
-        // return redirect()->route('schedule.index');
+        return redirect()->route('schedule.index');
     }
 }

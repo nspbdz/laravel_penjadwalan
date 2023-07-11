@@ -12,7 +12,7 @@
                 <h3>Data Jadwal Kuliah</h3>
             </div>
             <div class="card-header">
-                <form class="form" method="POST" action="{{route('schedule.test')}}">
+                <form class="form" method="GET" action="{{route('algoritma.build')}}">
                     {{ csrf_field() }}
                     <label> Akademik</label>
                     <select id="semester_tipe" name="semester_tipe" class="form-control">
@@ -152,7 +152,7 @@
                         <td>{{ $data [0] }}</td>
                         <td>{{ $data [1] }}</td>
                         <td>{{ $data [2] }}</td>
-                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [8] }}</td>
                         <td>{{ $data [3] }}</td>
 
                         <td>{{ $data [4] }}</td>

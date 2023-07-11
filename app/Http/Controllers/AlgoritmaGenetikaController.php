@@ -71,7 +71,7 @@ class AlgoritmaGenetikaController extends Controller
 
         // Contoh: Menambahkan satu poin fitness jika tidak ada bentrok
         $timeSlots = [];
-
+        $penalty = 0;
         foreach ($schedule as $course) {
             $timeslotId = $course['timeslot']['id'];
             $roomId = $course['room']['id'];
@@ -83,15 +83,19 @@ class AlgoritmaGenetikaController extends Controller
                 $timeslotRoom = $timeslotId + $i . 'T-R' . $roomId;
                 $timeslotInstructor = $timeslotId + $i . 'T-I' . $instructorId;
                 $timeslotClass = $timeslotId + $i . 'T-C' . $classId;
+
+                if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor]) || isset($timeSlots[$timeslotClass])) {
+                    $penalty++; // Bentrok ditemukan, tambahkan poin fitness
+                    $fitness = floatval(1 / (1 + $penalty));
+                } else {
+                    $timeSlots[$timeslotRoom] = true;
+                    $timeSlots[$timeslotInstructor] = true;
+                    $timeSlots[$timeslotClass] = true;
+                    $fitness = 1;
+                }
             }
 
-            if (isset($timeSlots[$timeslotRoom]) || isset($timeSlots[$timeslotInstructor]) || isset($timeSlots[$timeslotClass])) {
-                $fitness++; // Bentrok ditemukan, tambahkan poin fitness
-            } else {
-                $timeSlots[$timeslotRoom] = true;
-                $timeSlots[$timeslotInstructor] = true;
-                $timeSlots[$timeslotClass] = true;
-            }
+
 
             // Implementasikan aturan penilaian fitness tambahan sesuai kebutuhan
             // Misalnya, menambahkan atau mengurangi poin fitness berdasarkan preferensi
@@ -167,7 +171,9 @@ class AlgoritmaGenetikaController extends Controller
     // Mutasi individu dengan mengganti gen secara acak
     private function mutate($individual, $mutationRate, $timeslots, $rooms, $instructors)
     {
+        // dd($individual);
         foreach ($individual as $course => $details) {
+            // dd($details);
             if (rand(0, 100) < $mutationRate) {
                 $explode = explode(' - ', $course);
                 $courseId = $explode[0];
@@ -175,26 +181,59 @@ class AlgoritmaGenetikaController extends Controller
                 $jenis = $explode[2];
                 $class = $explode[3];
                 $sks = $explode[4];
-                if (!empty($this->wb[$courseId])) {
-                    $day = $this->wb[$courseId]['day'];
-                    $time = $this->wb[$courseId]['time'];
-                    $ruang = $this->wb[$courseId]['ruang'];
-                    $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
-                    $randomRoom = $this->getRuangan($rooms, $ruang);
-                } elseif (!empty($this->wtb[$dosenId])) {
-                    $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
-                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
-                } else {
-                    $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                    $randomRoom = $this->getRandomRuangan($rooms, $jenis);
-                }
-                $instructor = $this->checkDosen($dosenId, $instructors);
 
-                $individual[$course]['timeslot'] = $randomTimeslot;
-                $individual[$course]['room'] = $randomRoom;
-                $individual[$course]['instructor'] = $instructor;
-                $individual[$course]['class'] = ['id' => $class];
-                $individual[$course]['sks'] = $sks;
+                $timeslotId = $details['timeslot']['id'];
+                $roomId = $details['room']['id'];
+                $instructorId = $details['instructor']['id'];
+                $classId = $details['class']['id'];
+                for ($i = 0; $i < $sks; $i++) {
+                    $timeslotRoom = $timeslotId + $i . '-' . $roomId . '-TR';
+                    $timeslotInstructor = $timeslotId + $i . '-' . $instructorId . '-TD';
+                    $timeslotClass = $timeslotId + $i . '-' . $classId . '-TC';
+
+                    if (isset($usedTimeSlots[$timeslotRoom]) || isset($usedTimeSlots[$timeslotInstructor]) || isset($usedTimeSlots[$timeslotClass])) {
+
+                        if (!empty($this->wb[$courseId])) {
+                            $day = $this->wb[$courseId]['day'];
+                            $time = $this->wb[$courseId]['time'];
+                            $ruang = $this->wb[$courseId]['ruang'];
+                            $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                            $randomRoom = $this->getRuangan($rooms, $ruang);
+                        } elseif (!empty($this->wtb[$dosenId])) {
+                            $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                            $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                        } else {
+                            // $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                            // dd($timeslots);
+                            $randomKey = array_rand($timeslots);
+                            // dd($timeslots);
+                            $randomTimeslot = $timeslots[$randomKey];
+                            $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                        }
+                        $instructor = $this->checkDosen($dosenId, $instructors);
+    
+                        $individual[$course]['timeslot'] = $randomTimeslot;
+                        $individual[$course]['room'] = $randomRoom;
+                        $individual[$course]['instructor'] = $instructor;
+                        $individual[$course]['class'] = ['id' => $class];
+                        $individual[$course]['sks'] = $sks;
+                    } else {
+                        $usedTimeSlots[$timeslotRoom] = true;
+                        $usedTimeSlots[$timeslotInstructor] = true;
+                        $usedTimeSlots[$timeslotClass] = true;
+                        // unset($timeslots[explode('-', $timeslotRoom)[0]]);
+                        // unset($timeslots[explode('-', $timeslotInstructor)[0]]);
+                        // unset($timeslots[explode('-', $timeslotClass)[0]]);
+    
+                        // unset($rooms[explode('-', $timeslotRoom)[1]]);
+    
+                        $individual[$course] = $details;
+                        // dd($individual);
+                    }
+                }
+
+
+                
             }
         }
 
@@ -295,6 +334,7 @@ class AlgoritmaGenetikaController extends Controller
 
                 $child = $this->mutate($child, $mutationRate, $timeslots, $rooms, $instructors);
 
+                // dd($child);
                 $nextGeneration[] = $child;
             }
 
@@ -308,10 +348,14 @@ class AlgoritmaGenetikaController extends Controller
         foreach ($population as $individual) {
             $fitness = $this->calculateFitness($individual);
 
-            if ($fitness < $bestFitness) {
+            if ($fitness > $bestFitness) {
                 $bestFitness = $fitness;
                 $bestIndividual = $individual;
             }
+            // if ($fitness == 1) {
+            //     $bestFitness = $fitness;
+            //     $bestIndividual = $individual;
+            // }
         }
         return $bestIndividual;
     }
@@ -397,7 +441,7 @@ class AlgoritmaGenetikaController extends Controller
 
         $result = $this->runGeneticAlgorithm($populationSize, $tournamentSize, $mutationRate, $maxGenerations, $courses, $timeslots, $rooms, $instructors, $crossOverRate);
         Schedule::truncate();
-        
+
         foreach ($result as $course => $details) {
             $explode = explode(' - ', $course);
             $schedule = new Schedule;
@@ -407,6 +451,6 @@ class AlgoritmaGenetikaController extends Controller
             $schedule->kode_ruang = $details['room']['id'];
             $schedule->save();
         }
-        return redirect()->route('schedule.index');
+        // return redirect()->route('schedule.index');
     }
 }

@@ -273,7 +273,7 @@ class ProccessController extends Controller
             if ($bentrok[$i] == 0) {
                 $dataBentrok = [
                     $jam_a = $jadwal[$i]->hari,
-
+                    $kdjam = $jadwal[$i]->kdjam,
                     $hari_a = $jadwal[$i]->sesi,
                     $ruang_a = $jadwal[$i]->jam_kuliah,
                     $dosen_a = $jadwal[$i]->nama_mk,

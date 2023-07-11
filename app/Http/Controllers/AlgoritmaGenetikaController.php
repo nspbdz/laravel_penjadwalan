@@ -348,7 +348,7 @@ class AlgoritmaGenetikaController extends Controller
         foreach ($population as $individual) {
             $fitness = $this->calculateFitness($individual);
 
-            if ($fitness > $bestFitness) {
+            if ($fitness < $bestFitness) {
                 $bestFitness = $fitness;
                 $bestIndividual = $individual;
             }

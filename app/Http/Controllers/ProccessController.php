@@ -267,6 +267,8 @@ class ProccessController extends Controller
                     $sks = $jadwal[$i]->ruang,
                     $pengampuId = $jadwal[$i]->pengampuId,
                 ];
+                $where = ['kode_jam' => ($kdjam + 1)];
+                $this->updateData($pengampuId, $where);
 
                 $bentrokdata[] = $dataBentrok;
             }
@@ -1207,6 +1209,13 @@ class ProccessController extends Controller
         if ($result) {
             return response(['success' => true]);
         }
+    }
+
+    public function updateData($idPengampu, $setData)
+    {
+// dd('update');
+        return Schedule::where('kode_pengampu', $idPengampu)->update($setData);
+
     }
 
     public function getProdi(Request $request)

@@ -45,7 +45,7 @@ class AlgoritmaGenetikaController extends Controller
                 }
 
                 $instructor = $this->checkDosen($dosenId, $instructors);
-                $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class);
+                $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
                 while ($conflict) {
                     if (!empty($this->wb[$courseId])) {
                         $day = $this->wb[$courseId]['day'];
@@ -60,7 +60,7 @@ class AlgoritmaGenetikaController extends Controller
                         $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
                         $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                     }
-                    $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class);
+                    $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
                 }
 
                 $schedule[$course] = [
@@ -78,7 +78,7 @@ class AlgoritmaGenetikaController extends Controller
         return $population;
     }
 
-    private function isConflict($schedule, $timeslots, $rooms, $instructor, $class)
+    private function isConflict($schedule, $timeslots, $rooms, $instructor, $class, $sks)
     {
         foreach ($schedule as $data) {
             // if (
@@ -94,6 +94,16 @@ class AlgoritmaGenetikaController extends Controller
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['room']['id'] == $rooms['id']) ||
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['instructor']['id'] == $instructor['id']) ||
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['class']['id'] == $class)
+                ) {
+                    return true;
+                }
+            }
+
+            for ($i = 0; $i < $sks; $i++) {
+                if (
+                    ($data['timeslot']['id'] == ($timeslots['id'] + $i) && $data['room']['id'] == $rooms['id']) ||
+                    ($data['timeslot']['id'] == ($timeslots['id'] + $i) && $data['instructor']['id'] == $instructor['id']) ||
+                    ($data['timeslot']['id'] == ($timeslots['id'] + $i) && $data['class']['id'] == $class)
                 ) {
                     return true;
                 }

@@ -45,23 +45,27 @@ class AlgoritmaGenetikaController extends Controller
                 }
 
                 $instructor = $this->checkDosen($dosenId, $instructors);
-                $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
-                while ($conflict) {
-                    if (!empty($this->wb[$courseId])) {
-                        $day = $this->wb[$courseId]['day'];
-                        $time = $this->wb[$courseId]['time'];
-                        $ruang = $this->wb[$courseId]['ruang'];
-                        $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
-                        $randomRoom = $this->getRuangan($rooms, $ruang);
-                    } elseif (!empty($this->wtb[$dosenId])) {
-                        $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
-                        $randomRoom = $this->getRandomRuangan($rooms, $jenis);
-                    } else {
-                        $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                        $randomRoom = $this->getRandomRuangan($rooms, $jenis);
-                    }
-                    $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
-                }
+                // $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
+                // while ($conflict) {
+                //     if (!empty($this->wb[$courseId])) {
+                //         $day = $this->wb[$courseId]['day'];
+                //         $time = $this->wb[$courseId]['time'];
+                //         $ruang = $this->wb[$courseId]['ruang'];
+                //         $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                //         $randomRoom = $this->getRuangan($rooms, $ruang);
+                //     } elseif (!empty($this->wtb[$dosenId])) {
+                //         $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                //         $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                //     } else {
+                //         $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                //         $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+                //     }
+                //     $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
+                // }
+
+                $result = $this->searchAvailable($courseId, $schedule, $timeslots, $rooms, $randomTimeslot, $randomRoom, $instructor, $class, $sks, $dosenId, $jenis);
+                $randomTimeslot = $result['random_time_slot'];
+                $randomRoom = $result['random_room'];
 
                 $schedule[$course] = [
                     'timeslot' => $randomTimeslot,
@@ -78,16 +82,37 @@ class AlgoritmaGenetikaController extends Controller
         return $population;
     }
 
+    private function searchAvailable($courseId, $schedule, $timeslots, $rooms, $randomTimeslot, $randomRoom, $instructor, $class, $sks, $dosenId, $jenis)
+    {
+        $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
+        $counter = 0;
+        while ($conflict && $counter < 3) {
+            if (!empty($this->wb[$courseId])) {
+                $day = $this->wb[$courseId]['day'];
+                $time = $this->wb[$courseId]['time'];
+                $ruang = $this->wb[$courseId]['ruang'];
+                $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
+                $randomRoom = $this->getRuangan($rooms, $ruang);
+            } elseif (!empty($this->wtb[$dosenId])) {
+                $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+            } else {
+                $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                $randomRoom = $this->getRandomRuangan($rooms, $jenis);
+            }
+            $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
+            $counter++;
+        }
+
+        return [
+            'random_time_slot' => $randomTimeslot,
+            'random_room' => $randomRoom,
+        ];
+    }
+
     private function isConflict($schedule, $timeslots, $rooms, $instructor, $class, $sks)
     {
         foreach ($schedule as $data) {
-            // if (
-            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['room']['id'] == $rooms['id']) ||
-            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['instructor']['id'] == $instructor['id']) ||
-            //     ($data['timeslot']['id'] == $timeslots['id'] && $data['class']['id'] == $class)
-            // ) {
-            //     return true;
-            // }
 
             for ($i = 0; $i < $data['sks']; $i++) {
                 if (
@@ -222,9 +247,9 @@ class AlgoritmaGenetikaController extends Controller
     // Mutasi individu dengan mengganti gen secara acak
     private function mutate($individual, $mutationRate, $timeslots, $rooms, $instructors)
     {
-        // dd($individual);
+
         foreach ($individual as $course => $details) {
-            // dd($details);
+
             if (rand(0, 100) < $mutationRate) {
                 $explode = explode(' - ', $course);
                 $courseId = $explode[0];
@@ -254,10 +279,9 @@ class AlgoritmaGenetikaController extends Controller
                             $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
                             $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                         } else {
-                            // $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
-                            // dd($timeslots);
+
                             $randomKey = array_rand($timeslots);
-                            // dd($timeslots);
+
                             $randomTimeslot = $timeslots[$randomKey];
                             $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                         }
@@ -272,14 +296,8 @@ class AlgoritmaGenetikaController extends Controller
                         $usedTimeSlots[$timeslotRoom] = true;
                         $usedTimeSlots[$timeslotInstructor] = true;
                         $usedTimeSlots[$timeslotClass] = true;
-                        // unset($timeslots[explode('-', $timeslotRoom)[0]]);
-                        // unset($timeslots[explode('-', $timeslotInstructor)[0]]);
-                        // unset($timeslots[explode('-', $timeslotClass)[0]]);
-
-                        // unset($rooms[explode('-', $timeslotRoom)[1]]);
 
                         $individual[$course] = $details;
-                        // dd($individual);
                     }
                 }
             }

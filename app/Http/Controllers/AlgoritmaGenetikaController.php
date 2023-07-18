@@ -15,6 +15,7 @@ class AlgoritmaGenetikaController extends Controller
 {
     private $wb = [];
     private $wtb = [];
+    private $countTime = 0;
     // Inisialisasi populasi awal
     private function initializePopulation($populationSize, $courses, $timeslots, $rooms, $instructors)
     {
@@ -97,7 +98,7 @@ class AlgoritmaGenetikaController extends Controller
                 $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
                 $randomRoom = $this->getRandomRuangan($rooms, $jenis);
             } else {
-                $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
+                $randomTimeslot = $this->getRandomTimeSlot($timeslots, $sks);
                 $randomRoom = $this->getRandomRuangan($rooms, $jenis);
             }
             $conflict = $this->isConflict($schedule, $randomTimeslot, $randomRoom, $instructor, $class, $sks);
@@ -108,6 +109,16 @@ class AlgoritmaGenetikaController extends Controller
             'random_time_slot' => $randomTimeslot,
             'random_room' => $randomRoom,
         ];
+    }
+
+    public function getRandomTimeSlot($timeslots, $sks)
+    {
+        $filteredArray = array_filter($timeslots, function ($item) use ($sks) {
+            return $item['id_time'] <= ($this->countTime - ($sks - 1));
+        });
+
+        $randomKey = array_rand($filteredArray);
+        return $filteredArray[$randomKey];
     }
 
     private function isConflict($schedule, $timeslots, $rooms, $instructor, $class, $sks)
@@ -450,6 +461,7 @@ class AlgoritmaGenetikaController extends Controller
 
         $days = (new Hari())->getHari();
         $times = (new Hour())->getJam();
+        $this->countTime = count($times);
         $i = 0;
         foreach ($days as $hari) {
             foreach ($times as $time) {

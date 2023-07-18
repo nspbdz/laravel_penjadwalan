@@ -296,7 +296,14 @@ class AlgoritmaGenetikaController extends Controller
                             $randomTimeslot = $timeslots[$randomKey];
                             $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                         }
+
                         $instructor = $this->checkDosen($dosenId, $instructors);
+
+                        $result = $this->searchAvailable($courseId, $individual, $timeslots, $rooms, $randomTimeslot, $randomRoom, $instructor, $class, $sks, $dosenId, $jenis);
+                        $randomTimeslot = $result['random_time_slot'];
+                        $randomRoom = $result['random_room'];
+
+                       
 
                         $individual[$course]['timeslot'] = $randomTimeslot;
                         $individual[$course]['room'] = $randomRoom;

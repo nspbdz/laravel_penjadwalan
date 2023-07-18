@@ -38,7 +38,7 @@ class AlgoritmaGenetikaController extends Controller
                     $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
                     $randomRoom = $this->getRuangan($rooms, $ruang);
                 } elseif (!empty($this->wtb[$dosenId])) {
-                    $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                    $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId], $sks);
                     $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                 } else {
                     $randomTimeslot = $timeslots[rand(0, count($timeslots) - 1)];
@@ -95,7 +95,7 @@ class AlgoritmaGenetikaController extends Controller
                 $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
                 $randomRoom = $this->getRuangan($rooms, $ruang);
             } elseif (!empty($this->wtb[$dosenId])) {
-                $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId], $sks);
                 $randomRoom = $this->getRandomRuangan($rooms, $jenis);
             } else {
                 $randomTimeslot = $this->getRandomTimeSlot($timeslots, $sks);
@@ -287,7 +287,7 @@ class AlgoritmaGenetikaController extends Controller
                             $randomTimeslot = $this->getTimeSlot($timeslots, $day, $time);
                             $randomRoom = $this->getRuangan($rooms, $ruang);
                         } elseif (!empty($this->wtb[$dosenId])) {
-                            $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId]);
+                            $randomTimeslot = $this->getRandomTimeSlotWtb($timeslots, $this->wtb[$dosenId], $sks);
                             $randomRoom = $this->getRandomRuangan($rooms, $jenis);
                         } else {
 
@@ -303,7 +303,7 @@ class AlgoritmaGenetikaController extends Controller
                         $randomTimeslot = $result['random_time_slot'];
                         $randomRoom = $result['random_room'];
 
-                       
+
 
                         $individual[$course]['timeslot'] = $randomTimeslot;
                         $individual[$course]['room'] = $randomRoom;
@@ -385,13 +385,17 @@ class AlgoritmaGenetikaController extends Controller
         return $randomElement;
     }
 
-    private function getRandomTimeSlotWtb($array, $arrayHapus)
+    private function getRandomTimeSlotWtb($array, $arrayHapus, $sks)
     {
-        $compare = function ($a, $b) {
-            return ($a['day'] === $b['day'] && $a['time'] === $b['time']) ? 0 : -1;
+        // dd($arrayHapus);
+        $compare = function ($a, $b) use ($sks) {
+            // dd($a);
+            return (($a['day'] === $b['day'] && $a['time'] === $b['time']) ||
+             ($a['id_time'] >= ($this->countTime - ($sks - 1)))) ? 0 : -1;
         };
 
         $results = array_udiff($array, $arrayHapus, $compare);
+        // dd($sks,$result);
 
         $randomElement = null;
 

@@ -476,7 +476,7 @@ class AlgoritmaGenetikaController extends Controller
         $i = 0;
         foreach ($days as $hari) {
             foreach ($times as $time) {
-                if ($hari->kode == 5 && ($time->kode == 5 || $time->kode == 6)) {
+                if (($hari->kode == 5 && $time->kode == 5) || $time->kode == 6) {
                     continue;
                 }
                 $timeslots[] = [
@@ -489,6 +489,7 @@ class AlgoritmaGenetikaController extends Controller
                 $i++;
             }
         }
+        // dd($timeslots);
 
         // $rooms = [
         //     ['id' => 1, 'name' => 'Room 1'],

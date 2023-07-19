@@ -12,8 +12,7 @@
                 <h3>Data Jadwal Kuliah</h3>
             </div>
             <div class="card-header">
-                <form class="form" method="POST" action="/algoritma">
-                <form class="form" method="GET" action="/schedule">
+                <form class="form" method="GET" action="/algoritma">
                     {{ csrf_field() }}
 
 

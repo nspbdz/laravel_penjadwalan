@@ -617,6 +617,8 @@ class ProccessController extends Controller
                 'jam.range_jam as jam',
                 'jadwalkuliah.kode_hari as kdhari',
                 'jadwalkuliah.kode_jam as kdjam',
+                // 'pengampu.kelas as kelas',
+                // DB::raw("CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') as info"),
                 DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1A' THEN CONCAT(matakuliah.nama, '\n ', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1A"),
                 DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1B' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n ', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1B"),
                 DB::raw("MAX(CASE WHEN pengampu.kelas = 'D3TI1C' THEN CONCAT(matakuliah.nama, '\n', dosen.nama, '\n', ruang.nama, ', ', matakuliah.sks, ' SKS') ELSE NULL END) AS D3TI1C"),
@@ -633,6 +635,41 @@ class ProccessController extends Controller
             ->orderBy('hari.kode', 'asc')
             ->orderBy('jam.kode', 'asc')
             ->get();
+
+        // dd($viewti);
+        $scheduleti = [];
+        foreach ($viewti as $ti) {
+            if ($ti->D3TI1A) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI1A'] = $ti->D3TI1A;
+            }
+            if ($ti->D3TI1B) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI1B'] = $ti->D3TI1B;
+            }
+            if ($ti->D3TI1C) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI1C'] = $ti->D3TI1C;
+            }
+            if ($ti->D3TI2A) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI2A'] = $ti->D3TI2A;
+            }
+            if ($ti->D3TI2B) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI2B'] = $ti->D3TI2B;
+            }
+            if ($ti->D3TI2C) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI2C'] = $ti->D3TI2C;
+            }
+            if ($ti->D3TI3A) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI3A'] = $ti->D3TI3A;
+            }
+            if ($ti->D3TI3B) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI3B'] = $ti->D3TI3B;
+            }
+            if ($ti->D3TI3C) {
+                $scheduleti[$ti->Hari][$ti->jam]['D3TI3C'] = $ti->D3TI3C;
+            }
+        }
+
+        // dd($scheduleti);
+
         $uniqueJamCodes = $jam->pluck('kode')->unique();
         $harirpl = DB::table('hari')->get();
         $kelasrpl = DB::table('kelas')
@@ -687,8 +724,26 @@ class ProccessController extends Controller
         }
 
         return view('schedule.index', [
-            'bentrok' => $bentrok, 'tidakBentrok' => $tidakBentrok, 'bentrokdata' => $bentrokdata, 'tidakBentrokrpl' => $tidakBentrokrpl, 'bentrokdatarpl' => $bentrokdatarpl, 'jadwal' => $jadwal, 'kelasti' => $kelasti, 'viewti' => $viewti, 'kelasrpl' => $kelasrpl, 'viewrpl' => $viewrpl, 'prodi' => $prodi, 'tahun' => $tahun, 'jam' => $jam, 'uniqueJamCodes' => $uniqueJamCodes, 'harirpl' => $harirpl,
-            'tableData' => $tableData
+            'bentrok' => $bentrok,
+            'tidakBentrok' => $tidakBentrok,
+            'bentrokdata' => $bentrokdata,
+            'tidakBentrokrpl' => $tidakBentrokrpl,
+            'bentrokdatarpl' => $bentrokdatarpl,
+            'jadwal' => $jadwal,
+            'kelasti' => $kelasti,
+            'viewti' => $viewti,
+            'kelasrpl' => $kelasrpl,
+            'viewrpl' => $viewrpl,
+            'prodi' => $prodi,
+            'tahun' => $tahun,
+            'jam' => $jam,
+            'uniqueJamCodes' => $uniqueJamCodes,
+            'harirpl' => $harirpl,
+            'tableData' => $tableData,
+            'hari' => ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+            'jam' => ['07:30-08:20', '08:20-09:10', '09:10-10:00', '10:00-10:50', '10:50-11:40',
+            '11:40-12:40', '12:40-13:30', '13:30-14:20', '14:20-15:10', '15:10-16:00'],
+            'scheduleti' => $scheduleti
         ]);
     }
     public function updateKodeJam_old(Request $request)

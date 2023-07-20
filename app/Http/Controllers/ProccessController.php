@@ -638,6 +638,10 @@ class ProccessController extends Controller
 
         // dd($viewti);
         $scheduleti = [];
+        $listJam = [
+            '07:30-08:20', '08:20-09:10', '09:10-10:00', '10:00-10:50', '10:50-11:40',
+            '11:40-12:40', '12:40-13:30', '13:30-14:20', '14:20-15:10', '15:10-16:00'
+        ];
         foreach ($viewti as $ti) {
             if ($ti->D3TI1A) {
                 $scheduleti[$ti->Hari][$ti->jam]['D3TI1A'] = $ti->D3TI1A;
@@ -671,6 +675,7 @@ class ProccessController extends Controller
         // dd($scheduleti);
 
         $uniqueJamCodes = $jam->pluck('kode')->unique();
+        // dd($uniqueJamCodes);
         $harirpl = DB::table('hari')->get();
         $kelasrpl = DB::table('kelas')
             ->where('jenis_kelas', '=', 'rpl')
@@ -701,8 +706,16 @@ class ProccessController extends Controller
             ->orderBy('hari.kode', 'asc')
             ->orderBy('jam.kode', 'asc')
             ->get();
+        // dd($jam);
         $tableData = [];
+        $schedulerpl = [];
         foreach ($viewrpl as $row) {
+            $key = array_search($row->jam, $listJam);
+            // dd($key);
+            for ($i = 0; $i < $row->sks; $i++) {
+                $k = $key + $i;
+                $schedulerpl[$row->Hari][$listJam[$k]][$row->kelas] = $row->nmmatkul;
+            }
             $matkulIndex = array_search($row->nmmatkul, array_column($tableData, 'matakuliah'));
             if ($matkulIndex === false) {
                 $tableData[] = [
@@ -741,9 +754,9 @@ class ProccessController extends Controller
             'harirpl' => $harirpl,
             'tableData' => $tableData,
             'hari' => ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
-            'jam' => ['07:30-08:20', '08:20-09:10', '09:10-10:00', '10:00-10:50', '10:50-11:40',
-            '11:40-12:40', '12:40-13:30', '13:30-14:20', '14:20-15:10', '15:10-16:00'],
-            'scheduleti' => $scheduleti
+            'listJam' => $listJam,
+            'scheduleti' => $scheduleti,
+            'schedulerpl' => $schedulerpl
         ]);
     }
     public function updateKodeJam_old(Request $request)

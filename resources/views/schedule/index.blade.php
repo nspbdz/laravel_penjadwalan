@@ -218,7 +218,7 @@
           </tr>
 
           @foreach($hari as $h)
-          @foreach($jam as $j)
+          @foreach($listJam as $j)
           <tr>
             <td></td>
             <td>{{$h}}</td>
@@ -380,19 +380,7 @@
             <td>
 
 
-              {{-- Tampilkan data jadwal matakuliah --}}
-              @foreach ($viewrpl as $jdw)
-
-
-              @if ($jdw->kdhari === ($h + 1) && $jdw->kdjam === $jam[$i]->kode && $jdw->kelas === $kls->nama)
-
-              {{ $jdw->nmmatkul }}
-
-              @endif
-
-
-
-              @endforeach
+            {{ $schedulerpl[$hari[$h]][$jam[$i]->range_jam][$kls->nama]??'' }}
 
 
             </td>

@@ -714,6 +714,9 @@ class ProccessController extends Controller
             // dd($key);
             for ($i = 0; $i < $row->sks; $i++) {
                 $k = $key + $i;
+                if(!isset($listJam[$k])){
+                    continue;
+                }
                 $schedulerpl[$row->Hari][$listJam[$k]][$row->kelas] = $row->nmmatkul;
             }
             $matkulIndex = array_search($row->nmmatkul, array_column($tableData, 'matakuliah'));

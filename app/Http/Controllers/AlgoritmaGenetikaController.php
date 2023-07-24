@@ -115,8 +115,7 @@ class AlgoritmaGenetikaController extends Controller
     public function getRandomTimeSlot($timeslots, $sks)
     {
         $filteredArray = array_filter($timeslots, function ($item) use ($sks) {
-            return ($item['id_time'] <= ($this->countTime - ($sks - 1)) ||
-            $item['id_time'] <= $this->break - ($sks - 1));
+            return ($item['id_time'] <= ($this->countTime - ($sks - 1)));
         });
 
         $randomKey = array_rand($filteredArray);
@@ -393,8 +392,7 @@ class AlgoritmaGenetikaController extends Controller
         $compare = function ($a, $b) use ($sks) {
             // dd($a);
             return (($a['day'] === $b['day'] && $a['time'] === $b['time']) ||
-             ($a['id_time'] >= ($this->countTime - ($sks - 1)))||
-             ($a['id_time'] >= ($this->break - ($sks - 1)))) ? 0 : -1;
+             ($a['id_time'] >= ($this->countTime - ($sks - 1)))) ? 0 : -1;
         };
 
         $results = array_udiff($array, $arrayHapus, $compare);

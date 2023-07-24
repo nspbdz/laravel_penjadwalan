@@ -62,4 +62,48 @@ class Schedule extends Model
             })
             ->get()->count();
     }
+
+    public function checkBentrok2($idPengampu, $schedule, $kodeJam, $kodeHari)
+    {
+        return DB::table($this->table)
+            ->select(
+                'pengampu.kode_dosen',
+                'pengampu.kode_mk',
+                'pengampu.kelas',
+                'jadwalkuliah.kode_ruang'
+            )
+            ->leftJoin('pengampu', 'pengampu.kode', '=', 'jadwalkuliah.kode_pengampu')
+            ->where('jadwalkuliah.kode_pengampu', $idPengampu)
+            ->where(function ($query) use ($schedule, $kodeJam) {
+                $query->where('jadwalkuliah.kode_ruang', $schedule->kode_ruang)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $schedule->kode_hari);
+            })
+            ->orWhere(function ($query) use ($schedule, $kodeJam) {
+                $query->where('pengampu.kelas', $schedule->kelas)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $schedule->kode_hari);
+            })
+            ->orWhere(function ($query) use ($schedule, $kodeJam) {
+                $query->where('pengampu.kode_dosen', $schedule->kode_dosen)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $schedule->kode_hari);
+            })
+            ->orWhere(function ($query) use ($schedule, $kodeJam, $kodeHari) {
+                $query->where('jadwalkuliah.kode_ruang', $schedule->kode_ruang)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $kodeHari);
+            })
+            ->orWhere(function ($query) use ($schedule, $kodeJam, $kodeHari) {
+                $query->where('pengampu.kelas', $schedule->kelas)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $kodeHari);
+            })
+            ->orWhere(function ($query) use ($schedule, $kodeJam, $kodeHari) {
+                $query->where('pengampu.kode_dosen', $schedule->kode_dosen)
+                    ->where('jadwalkuliah.kode_jam', $kodeJam)
+                    ->where('jadwalkuliah.kode_hari', $kodeHari);
+            })
+            ->get()->count();
+    }
 }

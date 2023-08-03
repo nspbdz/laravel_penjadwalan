@@ -106,7 +106,7 @@
                     <tr style="background: yellow;">
                         <td>{{ $loop->index + 1 }}</td>
                         <td>
-                            <select class="form-control kode-hari-dropdown" id="kode-hari-dropdown" name="kode-hari-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                            <select class="form-control kode-hari-dropdown" id="kode-hari-dropdown" name="kode-hari-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}" style="width:75px">
                                 <option value="">{{$data[11]}}</option>
                                 <option value="1" {{ $data[11] == '1' ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ $data[11] == '2' ? 'selected' : '' }}>2</option>
@@ -117,7 +117,7 @@
                         </td>
                         <td>{{ $data [0] }}</td>
                         <td>
-                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown" name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown" name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}" style="width:75px">
                                 <option value="">{{$data[1]}}</option>
                                 <option value="1" {{ $data[1] == '1' ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ $data[1] == '2' ? 'selected' : '' }}>2</option>

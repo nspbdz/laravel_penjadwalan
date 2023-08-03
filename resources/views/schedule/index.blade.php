@@ -13,6 +13,8 @@
             </div>
             <div class="card-header">
                 <form class="form" method="POST" action="/algoritma">
+
+                    <!-- <form class="form" method="POST" action="/algoritma"> -->
                     <form class="form" method="GET" action="/schedule">
                         {{ csrf_field() }}
 
@@ -49,6 +51,7 @@
             <div class="card-header">
                 <button type="submit" class=" btn btn-danger pull-left" onclick="ShowProgressAnimation();">Proses</button>
                 <a class="btn btn-info" href="{{ route('schedule.export') }}">Export Excel</a>
+                <!-- <a class="btn btn-info" href="{{ route('schedule.exportdetail') }}">Export Detail Excel</a> -->
             </div>
 
             </form>
@@ -73,8 +76,128 @@
 
 
         </div>
+        <h3>Ini Data Bentrok dan kelebihan jam </h3>
+        <form method="GET" action="/proccess/bentrok">
+            <button class="btn btn-danger" type="submmit">Proses Bentrok</button>
+        </form>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Kode Hari</th>
+                        <th>Hari</th>
+                        <th>Kode jam</th>
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
 
-        <h3>Jadwal Kuliah</h3>
+                        <th>Ruang</th>
+
+
+                    </tr>
+                    @foreach($bentrokdata as $data)
+
+
+                    <tr style="background: yellow;">
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>
+                            <select class="form-control kode-hari-dropdown" id="kode-hari-dropdown" name="kode-hari-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                                <option value="">{{$data[11]}}</option>
+                                <option value="1" {{ $data[11] == '1' ? 'selected' : '' }}>1</option>
+                                <option value="2" {{ $data[11] == '2' ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ $data[11] == '3' ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ $data[11] == '4' ? 'selected' : '' }}>4</option>
+                                <option value="5" {{ $data[11] == '5' ? 'selected' : '' }}>5</option>
+                            </select>
+                        </td>
+                        <td>{{ $data [0] }}</td>
+                        <td>
+                            <select class="form-control kode-jam-dropdown" id="kode-jam-dropdown" name="kode-jam-dropdown" data-row="{{ $loop->index }}" data-id="{{$data[10]}}">
+                                <option value="">{{$data[1]}}</option>
+                                <option value="1" {{ $data[1] == '1' ? 'selected' : '' }}>1</option>
+                                <option value="2" {{ $data[1] == '2' ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ $data[1] == '3' ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ $data[1] == '4' ? 'selected' : '' }}>4</option>
+                                <option value="5" {{ $data[1] == '5' ? 'selected' : '' }}>5</option>
+                                <option value="6" {{ $data[1] == '6' ? 'selected' : '' }}>6</option>
+                                <option value="7" {{ $data[1] == '7' ? 'selected' : '' }}>7</option>
+                                <option value="8" {{ $data[1] == '8' ? 'selected' : '' }}>8</option>
+                                <option value="9" {{ $data[1] == '9' ? 'selected' : '' }}>9</option>
+                                <option value="10" {{ $data[1] == '10' ? 'selected' : '' }}>10</option>
+                                <!-- Tambahkan opsi lain sesuai kebutuhan -->
+                            </select>
+                        </td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [3] }}</td>
+                        <td>{{ $data [8] }}</td>
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+                        <td>{{ $data [7] }}</td>
+
+                        <td>{{ $data [9] }}</td>
+
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Ini Data Tidak Bentrok </h3>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-md">
+                    <tr>
+                        <th>No</th>
+                        <th>Hari</th>
+
+                        <th>Sesi</th>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>matakuliah</th>
+                        <th>Dosen</th>
+                        <th>SKS</th>
+                        <th>Semester</th>
+
+                        <th>Ruang</th>
+
+
+                    </tr>
+                    @foreach($tidakBentrok as $data)
+
+
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $data [0] }}</td>
+                        <td>
+                            {{$data [1]}}
+                        </td>
+                        <td>{{ $data [2] }}</td>
+                        <td>{{ $data [7] }}</td>
+                        <td>{{ $data [3] }}</td>
+
+                        <td>{{ $data [4] }}</td>
+                        <td>{{ $data [5] }}</td>
+                        <td>{{ $data [6] }}</td>
+
+
+                        <td>{{ $data [8] }}</td>
+
+                        <!-- <td>{{ $data [9] }}</td> -->
+
+
+                    </tr>
+                    @endforeach
+                </table>
+            </div>
+        </div>
+        <h3>Jadwal Tidak Kuliah Bentrok</h3>
         <div class="card-body">
             <div class="table-responsive">
                 <table border="2">
@@ -109,11 +232,14 @@
 
                         @foreach ($kelasrpl as $kls)
                         <td>
+                            @if ($i === 5)
+                            Istirahat
+                            @else
 
-                            <!-- {{ $schedulerpl[$hari[$h]][$jam[$i]->range_jam][$kls->nama]??'' }} -->
                             {{ $tableData[$hari[$h]][$jam[$i]->range_jam][$kls->nama] ?? '' }}
-
+                            @endif
                         </td>
+
 
                         @endforeach
 
@@ -133,6 +259,9 @@
 
 
         <h3>Jadwal Kuliah Bentrok</h3>
+        <form method="GET" action="/proccess/bentrok">
+            <button class="btn btn-danger" type="submmit">Proses Bentrok</button>
+        </form>
         <div class="card-body">
             <div class="table-responsive">
                 <table border="2">
@@ -168,8 +297,12 @@
                         @foreach ($kelasrpl as $kls)
                         <td>
 
-                            <!-- {{ $schedulerpl[$hari[$h]][$jam[$i]->range_jam][$kls->nama]??'' }} -->
+                            @if ($i === 5)
+                            Istirahat
+                            @else
+
                             {{ $tableDataBentrok[$hari[$h]][$jam[$i]->range_jam][$kls->nama] ?? '' }}
+                            @endif
 
                         </td>
 
@@ -245,6 +378,39 @@
                 // Melakukan refresh halaman dengan URL yang diperbarui
                 window.location.href = updatedUrl;
 
+            });
+
+            $('.kode-hari-dropdown').on('change', function() {
+                // console.log('test');
+                var row = $(this).data('row');
+                var id = $(this).data('id');
+                var kodeHari = $(this).val();
+                // Kirim permintaan AJAX ke endpoint untuk mengupdate kode jam dalam database
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                $.ajax({
+                    url: '{{route("schedule.updateKodeHari")}}', // Ganti dengan URL endpoint Laravel Anda
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        row: row,
+                        kodeHari: kodeHari
+                    },
+                    success: function(response) {
+
+                        // Lakukan tindakan lain setelah berhasil mengupdate kode jam
+                        if (response.success) {
+                            // Refresh halaman setelah menerima respons sukses
+                            location.reload();
+                        } else {
+                            alert('Data Bentrok');
+                            // console.log(response);
+                        }
+                    }
+                });
             });
         });
     </script>

@@ -331,8 +331,6 @@ class ProccessController extends Controller
         }
         $prodi = DB::table('matakuliah')->select('prodi')->get();
 
-
-        $tahun = DB::table('tahun_akademik')->get();
         $jam = DB::table('jam')->get();
         $listJam = [
             '07:30-08:20', '08:20-09:10', '09:10-10:00', '10:00-10:50', '10:50-11:40',

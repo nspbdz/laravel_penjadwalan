@@ -72,6 +72,7 @@ class ProccessController extends Controller
         //dd($jumlahJadwal);
         $jumlah_bentrok = 0;
         $bentrok = array();
+        $keterangan = [];
         for ($i = 0; $i < $jumlahJadwal; $i++) {
             $bentrok[$i] = 0;
             $jam_a = intval($jadwal[$i]->kdjam);
@@ -82,7 +83,7 @@ class ProccessController extends Controller
             $sks = intval($jadwal[$i]->sks);
 
 
-
+            
             for ($j = 0; $j < $jumlahJadwal; $j++) {
                 $jam_b = intval($jadwal[$j]->kdjam);
                 $hari_b = intval($jadwal[$j]->kdhari);
@@ -102,6 +103,7 @@ class ProccessController extends Controller
                 ) {
                     $bentrok[$i] = 1;
                     $jumlah_bentrok = $jumlah_bentrok + 1;
+                    $keterangan[$i][] = 'Bentrok Ruangan';
                 }
                 if ($sks >= 2) {
                     if (
@@ -111,6 +113,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Ruangan';
                     }
                 }
                 if ($sks >= 3) {
@@ -121,6 +124,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Ruangan';
                     }
                 }
                 if ($sks >= 4) {
@@ -131,6 +135,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Ruangan';
                     }
                 }
                 if ($sks >= 5) {
@@ -141,6 +146,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Ruangan';
                     }
                 }
 
@@ -152,6 +158,7 @@ class ProccessController extends Controller
                 ) {
                     $bentrok[$i] = 1;
                     $jumlah_bentrok = $jumlah_bentrok + 1;
+                    $keterangan[$i][] = 'Bentrok Kelas';
                 }
                 if ($sks >= 2) {
                     if (
@@ -161,6 +168,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Kelas';
                     }
                 }
                 if ($sks >= 3) {
@@ -171,6 +179,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Kelas';
                     }
                 }
                 if ($sks >= 4) {
@@ -181,6 +190,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Kelas';
                     }
                 }
                 if ($sks >= 5) {
@@ -191,6 +201,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Kelas';
                     }
                 }
 
@@ -203,6 +214,7 @@ class ProccessController extends Controller
                 ) {
                     $bentrok[$i] = 1;
                     $jumlah_bentrok = $jumlah_bentrok + 1;
+                    $keterangan[$i][] = 'Bentrok Dosen';
                 }
                 if ($sks >= 2) {
                     if (
@@ -213,6 +225,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Dosen';
                     }
                 }
                 if ($sks >= 3) {
@@ -224,6 +237,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Dosen';
                     }
                 }
                 if ($sks >= 4) {
@@ -235,6 +249,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Dosen';
                     }
                 }
                 if ($sks >= 5) {
@@ -246,6 +261,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Bentrok Dosen';
                     }
                 }
                 //u8ntuk mengcek jam nya kelebihan
@@ -257,6 +273,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Kelebihan Jam';
                     }
                 }
                 if ($sks >= 3) {
@@ -266,6 +283,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Kelebihan Jam';
                     }
                 }
                 if ($sks >= 4) {
@@ -275,6 +293,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Kelebihan Jam';
                     }
                 }
                 if ($sks >= 5) {
@@ -284,6 +303,7 @@ class ProccessController extends Controller
                     ) {
                         $bentrok[$i] = 1;
                         $jumlah_bentrok = $jumlah_bentrok + 1;
+                        $keterangan[$i][] = 'Kelebihan Jam';
                     }
                 }
             }
@@ -581,7 +601,8 @@ class ProccessController extends Controller
             'bentrokdata' => $bentrokdata,
             'tidakBentrok' => $tidakBentrok,
 
-            'schedulerpl' => $schedulerpl
+            'schedulerpl' => $schedulerpl,
+            'keterangan' => $keterangan
 
         ]);
     }

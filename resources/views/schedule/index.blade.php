@@ -97,6 +97,7 @@
                         <th>Semester</th>
 
                         <th>Ruang</th>
+                        <th>Keterangan</th>
 
 
                     </tr>
@@ -141,6 +142,11 @@
                         <td>{{ $data [7] }}</td>
 
                         <td>{{ $data [9] }}</td>
+                        <td>
+                            @php
+                                echo implode('<br>',$keterangan[$loop->index]??[])
+                            @endphp
+                        </td>
 
 
                     </tr>

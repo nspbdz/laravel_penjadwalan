@@ -124,6 +124,7 @@ class AlgoritmaGenetikaController extends Controller
 
     private function isConflict($schedule, $timeslots, $rooms, $instructor, $class, $sks)
     {
+        // dd($timeslots);
         foreach ($schedule as $data) {
 
             for ($i = 0; $i < $data['sks']; $i++) {
@@ -131,6 +132,7 @@ class AlgoritmaGenetikaController extends Controller
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['room']['id'] == $rooms['id']) ||
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['instructor']['id'] == $instructor['id']) ||
                     (($data['timeslot']['id'] + $i) == $timeslots['id'] && $data['class']['id'] == $class)
+
                 ) {
                     return true;
                 }
@@ -144,6 +146,10 @@ class AlgoritmaGenetikaController extends Controller
                 ) {
                     return true;
                 }
+            }
+
+            if ($timeslots['id_time'] > (10 - ($data['sks'] - 1))) {
+                return true;
             }
         }
         return false;
@@ -340,7 +346,7 @@ class AlgoritmaGenetikaController extends Controller
             $jenisToSearch = 'LABORATORIUM';
         }
         $results = array_filter($array, function ($element) use ($jenisToSearch) {
-            if($jenisToSearch == 'PROYEK'){
+            if ($jenisToSearch == 'PROYEK') {
                 return $element['jenis'] === 'PROYEK' || $element['jenis'] === 'LABORATORIUM';
             } else {
                 return $element['jenis'] === $jenisToSearch;
@@ -396,7 +402,7 @@ class AlgoritmaGenetikaController extends Controller
         $compare = function ($a, $b) use ($sks) {
             // dd($a);
             return (($a['day'] === $b['day'] && $a['time'] === $b['time']) ||
-             ($a['id_time'] >= ($this->countTime - ($sks - 1)))) ? 0 : -1;
+                ($a['id_time'] >= ($this->countTime - ($sks - 1)))) ? 0 : -1;
         };
 
         $results = array_udiff($array, $arrayHapus, $compare);

@@ -340,7 +340,11 @@ class AlgoritmaGenetikaController extends Controller
             $jenisToSearch = 'LABORATORIUM';
         }
         $results = array_filter($array, function ($element) use ($jenisToSearch) {
-            return $element['jenis'] === $jenisToSearch;
+            if($jenisToSearch == 'PROYEK'){
+                return $element['jenis'] === 'PROYEK' || $element['jenis'] === 'LABORATORIUM';
+            } else {
+                return $element['jenis'] === $jenisToSearch;
+            }
         });
 
         $randomElement = null;
